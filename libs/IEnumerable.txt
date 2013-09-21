@@ -1,0 +1,159 @@
+
+interface IEnumerable {
+
+	for?
+	
+	as ICollection {
+		return this.("get length") ? this as Array : this as List;
+	}
+	
+	as Array {
+		if(this.("get length")) {
+			ret = Array(length: this.length, itemType: this.itemType);
+			for(value, key in this) {
+				ret[key] = value;
+			}
+			return ret;
+		}
+		return this as List as Array;
+	}
+	
+	as List {
+		ret = List(this.length, itemType: this.itemType);
+		for(value in this) {
+			ret.add(value);
+		}
+		return ret;
+	}
+	
+	# Count the number of all items.
+	get count {
+		num = 0;
+		for(value in this) num++;
+		return num;
+	}
+	
+	# Query the current object and return an IEnumerable object.
+	# @where The filter function. Items will be enumerated only if `@where(value: "the current value", key: "the current key", target: this) == true`.
+	# @desc If set to true. The enumeration will be reversed.
+	# @order The comparision function.Items will be swap if `@order(left, right) == true`.
+	# return: A List object that contains all items to enumerating.
+	query(@desc:Bool = false, @where:Function?, @order?, @distinct?, @select) {
+		for(value, key in this.query(where: @where, desc: @desc, order: @order, distinct: @distinct) {
+			if(@select is Function){
+				yield @select(value: value, key: key, target: this), key;
+			} else {
+				yield value.(@select), key;
+			}
+		}
+	}
+	
+	query(@desc:Bool = false, @where:Function?, @order?, @distinct?) {
+		
+		tmp = this.query(where: @where) as List;
+		
+		@order & tmp.sort(by: @order);
+		@distinct & tmp.distinct(by: @distinct);
+		
+		return tmp.query(desc: @desc);
+	}
+	
+	query(@where:Function){
+		for(value, key in this){
+			if(@where(value: value, key: key, target: this)){
+				yield value, key;
+			}
+		}
+	}
+	
+	query(@desc:Bool = false) {
+		if(@desc){
+			if(this.("get length") && this.("get []")) {
+				for(i = this.length; --i >= 0; ) {
+					yield this[i], i;
+				}
+			} else {
+				// Copy all items to a template array first.
+				return (this as Array).query(desc: true);
+			}
+		} else {
+			return this;
+		}
+	}
+	 
+	query(@desc:Bool = false, @order?) {
+		return (this as Array).sort(order: @order).query(desc: @desc);
+	}
+	
+	#@target Used in `@do(target: @target)`. 
+	#@index Used in `@do(index: @index++)`. Set @index = 0 if @do want to known the current iterate count. 
+	each(@do:Function, @desc:Bool = false, @where:Function?, @order?, @distinct?, @select, @target = this, @index:Int?){
+		for(value, key in this.query(desc: @desc, where: @where, order: @order, distinct: @distinct, select: @select)) {
+			if((ret = @do(value: value, key: key, target: @target, index: @index & @index++)) != undefined) 
+				return ret;
+		}
+	}
+	
+	find(@where?:Function, @result = List(this.length, itemType: this.itemType), @desc:Bool = false, @where:Function?, @order?, @distinct?, @select) {
+		index = 0;
+		for(value in this.query(desc: @desc, where: @where, order: @order, distinct: @distinct, select: @select)) {
+			@result[index++] = value;
+		}
+		return @result;
+	}
+	
+	find(@which:Function, @desc:Bool = false, @where:Function?, @order?, @distinct?, @select) {
+		for(value in this.query(desc: @desc, where: @which, order: @order, distinct: @distinct, select: @select)) {
+			return value;
+		}
+	}
+	
+	indexOf(@value, @start?, @end?, @length?){
+		return this.indexOf(which: {value == @value}, start: @start?, end: @end?, length: @length?);
+	}
+	
+	indexOf(@which, @start:Int = (@end - @length) | 0, @end:Int = (@start + @length) | this.length, @length:Int?) {
+		if(!this.("get []")) {
+			return (this as ICollection).indexOf(which: @which, start: @start, end: @end, length: @length);
+		}
+		
+		for(; @start < @end; @start++){
+			if(@which(value: this[@start], key: @start, target: @target) == true){
+				return @start;
+			}
+		}
+		return -1;
+	}
+	
+	indexOf(@where, @start = (@end - @length) | 0, @end = (@start + @length) | this.length, @length?) {
+		if(!this.("get []")) {
+			return (this as ICollection).indexOf(where: @where, start: @start, end: @end, length: @length);
+		}
+		
+		ret = List();
+		for(; @start < @end; @start++){
+			if(@where(value: this[@start], key: @start, target: @target) == true){
+				ret.add(this[@start]);
+			}
+		}
+		return ret;
+	}
+	
+	contains {
+		return this.indexOf(@) >= 0;
+	}
+	
+	copyTo(@to, @toStart = (@toEnd - @length | (@fromEnd - @fromStart)) | 0, @fromStart = (@fromEnd - @length | (@toEnd - @toStart)) | 0, @fromEnd = (@fromStart + @length | (@toEnd - @toStart)) | this.length, @length?){
+		if(this == @to && @fromStart < @toStart) {
+			toEnd = @toStart + @fromEnd - @fromStart;
+			for(@fromStart < @fromEnd){
+				to[--toEnd] = this[--@fromEnd];
+			}
+		} else {
+			for(@fromStart < @fromEnd){
+				to[@toStart++] = this[@fromStart++];
+			}
+		}
+	}
+	
+}

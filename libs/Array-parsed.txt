@@ -1,0 +1,20 @@
+class Array {
+
+	get data;
+
+	get length;
+	
+	Array {
+		this.data = @data;
+		this.length = @length as Int;
+	}
+	
+	get length {
+		return this._length
+	}
+
+	operator [] {
+		return Native.ptrval(this.data, @index);
+	}
+	
+}

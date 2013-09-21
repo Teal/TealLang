@@ -1,0 +1,3 @@
+require path
+if(condition) goto 3 else goto 5
+

@@ -1,0 +1,16 @@
+class String {
+
+	char* data;
+
+	int length;
+	
+	public String(char* value) {
+		this.data = value;
+		this.length = Native.strlen(value);
+	}
+	
+	public String operator_plus<T>(T value) {
+		return String.concat<T>(this, value);
+	}
+	
+}

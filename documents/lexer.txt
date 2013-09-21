@@ -1,0 +1,32 @@
+( ) [ ] { } , : ; . .. => ++ --
+= := += -= /= %=
+&&= ||= || && | ^pp @pp &  >> + - * / %
+== != < <= > >= !
+as is in 
+import assert base break case catch
+await continue else finally for
+if let return switch this arguments
+throw try class enum interface namespace
+goto extend
+null true false undefined yield
+1 .1 -.4 1.0 0.1
+"a" "\0\r\n\u\$\t\v" '"' `000000000` 
+// aaaaaa
+#aaaaaaa
+/// docasd
+/// docasd
+/* aaaa */
+/** aaaaa */
+aaaaaa
+
+
+
+'无任何转义和功能'
+"\0\r\n\u\t\v  支持\开头的转义"
+`$a  $b  $  支持$开头的转义`
+
+
+
+
+
+

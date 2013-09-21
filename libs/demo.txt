@@ -1,0 +1,108 @@
+
+// main 函数定义
+main = {
+
+	// 区块定义：readConfig。
+	readConfig: {
+		ini = IniFile.read('D:\\config.ini');
+	}
+	
+	// 函数调用。url，process 为参数。
+	server = HttpServer.new(
+		url: ini["default"]["url"],
+		process: {
+			out.server;
+			context.response.contentType = 'text/html';
+			context.response.write('hello');
+		},
+	);
+	
+	server.start();
+
+};
+
+// main 函数调用
+main();
+
+
+// 1. 常量
+num: 1  -1.
+string:  'plain text with no escape, use '' inside.'      "support $,text with \ escape except \""          `support $,text with \ escape except \``
+speceil:  this   that   args  base null true false  [/*array*/]     {/*function*/}
+
+// 2. 操作符
+
+1 + 2
+1 - 2
+1 * 2
+1 / 2
+a == 2
+a != 2
+a <= 2
+a >= 2
+a < 2
+a > 2
+a & b    //  bool
+a && b   //  if (a) b else a
+a | b    //  bool
+a || b   //  if (!a) b else a
+!a       //  bool
+?a       //  a is defined
+a ? b : c    // if (a) b else c
++= -= *= /= &= |= &&= ||=
+a ?= b     // if(a is not defined) a=b
+a.b
+a[]
+a .. b     // action with b and return a
+a is String
+a as String
+a or null
+&fn(); // ensure function is called once.
+
+// 3. 变量和函数
+
+a = 1
+obj.a = ""  // define directly
+fn = { Console.write(value)  }
+fn = { 
+	# doc comment
+	valA # doc coment
+	valB ?= "default value" # the doc
+	Console.write(valB);
+	Console.write(args[0]);
+}
+fn(
+	args: 2
+)
+
+// 4. 语句
+
+{}
+if(a){}
+switch(a){case 2: default:}
+for(a){}
+for(;;){}
+break;
+continue;
+goto;
+return;
+a: {}
+
+
+// 5. 类
+
+A.base = Object;
+A.staticFunc = {};
+A.dynaticFunc = {this;};
+
+// 6. 模块导入
+require file.ext
+ns = %file.ext%
+
+
+
+
+a = 1;
+a = 1+1;
+a = [];
+a = [0:44, 1:333];
