@@ -679,7 +679,7 @@ namespace TeaScript.CodeDom {
             set;
         }
 
-        public Expression Argument {
+        public List<FunctionCallExpression.Argument> Arguments {
             get;
             set;
         }
@@ -692,17 +692,16 @@ namespace TeaScript.CodeDom {
             Target.Write(writer);
 
             writer.Write('[');
-            Argument.Write(writer);
-            //bool appendComma = false;
-            //foreach (Argument args in Arguments) {
-            //    if (appendComma) {
-            //        writer.Write(',');
-            //        writer.Write(' ');
-            //    } else {
-            //        appendComma = true;
-            //    }
-            //    args.Write(writer);
-            //}
+            bool appendComma = false;
+            foreach (FunctionCallExpression.Argument args in Arguments) {
+                if (appendComma) {
+                    writer.Write(',');
+                    writer.Write(' ');
+                } else {
+                    appendComma = true;
+                }
+                args.Write(writer);
+            }
             writer.Write(']');
         }
 
@@ -1046,6 +1045,11 @@ namespace TeaScript.CodeDom {
             set;
         }
 
+        public bool Conditional {
+            get;
+            set;
+        }
+
         /// <summary>
         /// 获取主体。
         /// </summary>
@@ -1055,6 +1059,11 @@ namespace TeaScript.CodeDom {
         }
 
         public override void Write(IndentedTextWriter writer) {
+            if (Conditional) {
+                writer.Write('|');
+            }
+
+
             writer.WriteLine('{');
             writer.Indent++;
 

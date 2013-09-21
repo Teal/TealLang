@@ -176,9 +176,8 @@ namespace TeaScript.Parser {
             if (_lexer.Peek().Type == token) {
                 return _lexer.Read();
             }
-            
-            Error("应输入 " + token.GetName());
-            //  Error(String.Format(Messages.ExpectedToken, Token.Find(token).Name));
+
+            ErrorReporter.Error("应输入 \"" + token.GetName() + "\"", _lexer.Peek().StartLocation, _lexer.Peek().EndLocation);
             return _lexer.Current;
         }
 
@@ -206,43 +205,14 @@ namespace TeaScript.Parser {
             //  Program :
             //    StatementList
 
-            scope.Statements = ParseStatementList(false);
-
-        }
-
-        private List<Statement> ParseStatementList(bool inBlock = true) {
-
             //  StatementList :
             //    Statement
             //    StatementList Statement
 
-            List<Statement> ret = new List<Statement>();
-
-        parsenext:
-
-            switch (_lexer.Peek().Type) {
-
-                case TokenType.RBrace:
-
-                    // 如果是内部脚本块，则发现 RBrace 时中停止解析。
-                    if (inBlock) {
-                        return ret;
-                    }
-
-                    Error("多余的 }");
-                    _lexer.Read();
-                    break;
-
-                case TokenType.EOF:
-                    break;
-
-                default:
-                    ret.Add(ParseStatement());
-                    goto parsenext;
-
+            scope.Statements = new List<Statement>(16);
+            while (_lexer.Peek().Type != TokenType.EOF) {
+                scope.Statements.Add(ParseStatement());
             }
-
-            return ret;
 
         }
 
@@ -376,6 +346,10 @@ namespace TeaScript.Parser {
                 case TokenType.Trace:
                     return ParseTraceStatement();
 
+                case TokenType.DocComment:
+                    ParseDocComment();
+                    return ParseStatement();
+
                 default:
                     return ParseExpressionStatement();
             }
@@ -400,9 +374,31 @@ namespace TeaScript.Parser {
 
             return new Block() {
                 StartLocation = _lexer.Read().StartLocation,
-                Statements = ParseStatementList(),
+                Statements = ParseBlockBody(),
                 EndLocation = ExpectToken(TokenType.RBrace).EndLocation
             };
+
+        }
+
+        private List<Statement> ParseBlockBody() {
+
+            List<Statement> ret = new List<Statement>();
+
+        parsenext:
+
+            switch (_lexer.Peek().Type) {
+
+                case TokenType.RBrace:
+                case TokenType.EOF:
+                    break;
+
+                default:
+                    ret.Add(ParseStatement());
+                    goto parsenext;
+
+            }
+
+            return ret;
 
         }
 
@@ -451,7 +447,7 @@ namespace TeaScript.Parser {
             };
 
             if (AllowMissingConditionQuote && _lexer.Peek().Type != TokenType.LParam) {
-                ret.Condition = _lexer.Peek().Type == TokenType.LBrace ? null : ParseExpression();
+                ret.Condition = _lexer.Peek().Type == TokenType.LBrace ? null : ParseExpression(2);
             } else {
                 ExpectToken(TokenType.LParam);
                 ret.Condition = ParseExpression();
@@ -460,64 +456,58 @@ namespace TeaScript.Parser {
 
 
             ExpectToken(TokenType.LBrace);
-            bool hasDefault = false;
-            for (; ; ) {
-                SwitchStatement.CaseClause cc;
 
-                switch (_lexer.Read().Type) {
-                    case TokenType.Case:
+        parsenextcase:
 
-                        cc = new SwitchStatement.CaseClause() {
-                            StartLocation = _lexer.Current.StartLocation,
-                            Statements = new List<Statement>()
-                        };
+            switch (_lexer.Peek().Type) {
 
-                        Expression ep;
-                        if (_lexer.Peek().Type == TokenType.Else) {
-                            if (hasDefault) {
-                                Error("case else 段只能出现一次。");
-                            } else {
-                                hasDefault = true;
-                            }
+                case TokenType.Case:
+                    SwitchStatement.CaseClause cc = new SwitchStatement.CaseClause() {
+                        StartLocation = _lexer.Read().StartLocation,
+                        Statements = new List<Statement>(),
+                        Label = MatchToken(TokenType.Else) ? null : ParseExpression()
+                    };
 
-                            ep = null;
-                        } else if (hasDefault) {
-                            Error("case else 应该出现在所有 case 的最后一个");
-                            ep = ParseExpression();
-                        } else {
-                            ep = ParseExpression();
+                    ExpectToken(TokenType.Colon);
+
+                    // 检查 case 的重复性。
+                    foreach (SwitchStatement.CaseClause old in ret.Cases) {
+                        if (old.Label == null && cc.Label == null) {
+                            ErrorReporter.Error("标签 case else 已经出现在该 switch 中", cc.Label.StartLocation, cc.Label.EndLocation);
                         }
 
-                        cc.Label = ep;
+                        if (old.Label != null && cc.Label != null && old.ToString() == cc.ToString()) {
+                            ErrorReporter.Error("标签 case " + old.ToString() + " 已经出现在该 switch 中", cc.Label.StartLocation, cc.Label.EndLocation);
+                        }
 
-                        ExpectToken(TokenType.Colon);
-                        break;
+                    }
 
-                    case TokenType.RBrace:
-                        goto endLoop;
+                    ret.Cases.Add(cc);
 
-                    default:
-                        Error("switch 块错误");
-                        goto endLoop;
-                }
-                  
-                ret.Cases.Add(cc);
-                
-                TokenType tokenType;
+                parsenext:
+                    switch (_lexer.Peek().Type) {
+                        case TokenType.RBrace:
+                        case TokenType.Case:
+                        case TokenType.EOF:
+                            break;
+                        default:
+                            cc.Statements.Add(ParseStatement());
+                            goto parsenext;
+                    }
 
-                while ((tokenType = _lexer.Peek().Type) != TokenType.RBrace
-                       && tokenType != TokenType.Case
-                       && tokenType != TokenType.EOF) {
-                    cc.Statements.Add(ParseStatement());
-                }
 
-                cc.EndLocation = _lexer.Current.EndLocation;
+                    goto parsenextcase;
 
+                case TokenType.RBrace:
+                    _lexer.Read();
+                    break;
+
+                default:
+                    Error("应输入 \"}\" 或 \"case\"");
+                    break;
             }
 
-        endLoop:
-
-            ret.EndLocation = ExpectToken(TokenType.RBrace).EndLocation;
+            ret.EndLocation = _lexer.Current.EndLocation;
 
             return ret;
         }
@@ -535,130 +525,70 @@ namespace TeaScript.Parser {
 
             IterationStatement ret;
 
-            // 判断是否存在括号，分开处理。
-            if (AllowMissingConditionQuote && _lexer.Peek().Type != TokenType.LParam) {
+            bool missingQuote = AllowMissingConditionQuote && _lexer.Peek().Type != TokenType.LParam;
 
-                // for (Identifier in Expression)
-                if (_lexer.Peek().Type == TokenType.Identifier && CheckIdentifier(_lexer.Peek1(), "in")) {
-
-                    string id = _lexer.Read().LiteralBuffer.ToString();
-
-                    // skip in
-                    _lexer.Read();
-
-                    ret = new ForInStatement() {
-                        StartLocation = start,
-                        Target = id,
-                        Condition = ParseExpression()
-                    };
-
-                    // for Expression
-                } else {
-
-                    ForStatement s = new ForStatement() {
-                        StartLocation = start
-                    };
-
-                    ret = s;
-
-                    // 读取初始表达式。
-                    switch (_lexer.Peek().Type) {
-                        case TokenType.Semicolon:
-                            break;
-                        case TokenType.LBrace:
-                            break;
-                        default:
-                            s.InitExpression = ParseExpression();
-                            break;
-                    }
-
-                    // 如果接下来是分号，说明是三段式的 for 。
-                    if (_lexer.Peek().Type == TokenType.Semicolon) {
-                        _lexer.Read();
-
-                        if (_lexer.Peek().Type != TokenType.Semicolon) {
-                            s.Condition = ParseExpression();
-                        }
-
-                        ExpectToken(TokenType.Semicolon);
-
-                        if (_lexer.Peek().Type != TokenType.LBrace) {
-                            s.NextExpression = ParseExpression();
-                        }
-
-                        // 否则说明是只有条件语句的 for 。
-                    } else {
-                        // 接下来直接是括号，说明语句已经结束。
-                        s.Condition = s.InitExpression;
-                        s.InitExpression = null;
-                    }
-
-                }
-
-            } else {
-
+            if (!missingQuote) {
                 ExpectToken(TokenType.LParam);
+            }
 
-                // for (Identifier in Expression)
-                if (_lexer.Peek().Type == TokenType.Identifier && CheckIdentifier(_lexer.Peek1(), "in")) {
+            // for Identifier in Expression
+            if (_lexer.Peek().Type == TokenType.Identifier && CheckIdentifier(_lexer.Peek1(), "in")) {
 
-                    string id = _lexer.Read().LiteralBuffer.ToString();
+                ret = new ForInStatement() {
+                    StartLocation = start,
+                    Target = _lexer.Read().LiteralBuffer.ToString()
+                };
 
-                    // skip in
-                    _lexer.Read();
+                // skip in
+                _lexer.Read();
 
-                    ret = new ForInStatement() {
-                        StartLocation = start,
-                        Target = id,
-                        Condition = ParseExpression()
-                    };
+                ret.Condition = missingQuote ? ParseExpression() : ParseExpression(2);
 
                 // for Expression
-                } else {
+            } else {
 
-                    ForStatement s = new ForStatement() {
-                        StartLocation = start
-                    };
+                ForStatement s = new ForStatement() {
+                    StartLocation = start
+                };
 
-                    ret = s;
+                ret = s;
 
-                    // 读取初始表达式。
-                    switch(_lexer.Peek().Type){
-                        case TokenType.Semicolon:
-                            break;
-                        case TokenType.RParam:
-                            Error("缺少表达式");
-                            break;
-                        default:
-                            s.InitExpression = ParseExpression();
-                            break;
-                    }
-
-                    // 如果接下来是分号，说明是三段式的 for 。
-                    if (_lexer.Peek().Type == TokenType.Semicolon) {
-                        _lexer.Read();
-
-                        if (_lexer.Peek().Type != TokenType.Semicolon) {
-                            s.Condition = ParseExpression();
-                        }
-
-                        ExpectToken(TokenType.Semicolon);
-
-                        if (_lexer.Peek().Type != TokenType.RParam) {
-                            s.NextExpression = ParseExpression();
-                        }
-
-                    // 否则说明是只有条件语句的 for 。
-                    } else {
-                        // 接下来直接是括号，说明语句已经结束。
-                        s.Condition = s.InitExpression;
-                        s.InitExpression = null;
-                    }
-
+                // 读取初始表达式。
+                switch (_lexer.Peek().Type) {
+                    case TokenType.Semicolon:
+                        break;
+                    case TokenType.LBrace:
+                        break;
+                    default:
+                        s.InitExpression = missingQuote ? ParseExpression() : ParseExpression(2);
+                        break;
                 }
 
-                ExpectToken(TokenType.RParam);
+                // 如果接下来是分号，说明是三段式的 for 。
+                if (_lexer.Peek().Type == TokenType.Semicolon) {
+                    _lexer.Read();
 
+                    if (_lexer.Peek().Type != TokenType.Semicolon) {
+                        s.Condition = missingQuote ? ParseExpression() : ParseExpression(2);
+                    }
+
+                    ExpectToken(TokenType.Semicolon);
+
+                    if (_lexer.Peek().Type != (missingQuote ? TokenType.LBrace : TokenType.RParam)) {
+                        s.NextExpression = missingQuote ? ParseExpression() : ParseExpression(2);
+                    }
+
+                    // 否则说明是只有条件语句的 for 。
+                } else {
+                    // 接下来直接是括号，说明语句已经结束。
+                    s.Condition = s.InitExpression;
+                    s.InitExpression = null;
+                }
+
+            }
+
+            if (!missingQuote) {
+                ExpectToken(TokenType.RParam);
             }
 
             ret.Body = ParseStatementExceptEmptyStatement();
@@ -673,11 +603,9 @@ namespace TeaScript.Parser {
 
             Expression ret;
 
+            // 如果省略了 if 的括号，不允许函数省略括号。
             if (AllowMissingConditionQuote && _lexer.Peek().Type != TokenType.LParam) {
-                //bool orignalValue = AllowMissingFunctionCallQuote;
-                //AllowMissingFunctionCallQuote = false;
-                ret = ParseExpression();
-                //AllowMissingFunctionCallQuote = orignalValue;
+                ret = ParseExpression(2);
             } else {
                 ExpectToken(TokenType.LParam);
                 ret = ParseExpression();
@@ -700,43 +628,50 @@ namespace TeaScript.Parser {
 
             return new ThrowStatement() {
                 StartLocation = _lexer.Read().StartLocation,
-                Expression = FollowsWithExpression() ? ParseExpression() : null
+                Expression = FollowsWithExpression() ? ParseExpression() : null,
+                EndsWithsSemicolon = MatchToken(TokenType.Semicolon),
+                EndLocation = _lexer.Current.EndLocation
             };
         }
 
         private TraceStatement ParseTraceStatement() {
+
+            //  TraceStatement :
+            //    >> Expression? ;
+
             return new TraceStatement() {
                 StartLocation = _lexer.Read().StartLocation,
-                Expression = FollowsWithExpression() ? ParseExpression() : null
+                Expression = FollowsWithExpression() ? ParseExpression() : null,
+                EndsWithsSemicolon = MatchToken(TokenType.Semicolon),
+                EndLocation = _lexer.Current.EndLocation
             };
         }
 
         private AssertStatement ParseAssertStatement() {
+
+            //  AssertStatement :
+            //    assert Expression ;
+            //    //assert Expression throw Expression ;
+
             return new AssertStatement() {
                 StartLocation = _lexer.Read().StartLocation,
-                Body = FollowsWithExpression() ? ParseExpression() : null,
-                Throws = MatchToken(TokenType.Throw) ? ParseExpression() : null
+                Body = ParseExpression(),
+                // Throws = MatchToken(TokenType.Throw) ? ParseExpression() : null,
+                EndsWithsSemicolon = MatchToken(TokenType.Semicolon),
+                EndLocation = _lexer.Current.EndLocation
             };
         }
 
         private YieldStatement ParseYieldStatement() {
 
             //  YieldStatement :
-            //    yield Expression;
+            //    yield Expression ;
 
             return new YieldStatement() {
                 StartLocation = _lexer.Read().StartLocation,
-                Expression = ParseExpression()
-            };
-        }
-
-        private BreakStatement ParseBreakStatement() {
-
-            //  BreakStatement :
-            //    break;
-
-            return new BreakStatement() {
-                StartLocation = _lexer.Read().StartLocation
+                Expression = ParseExpression(),
+                EndsWithsSemicolon = MatchToken(TokenType.Semicolon),
+                EndLocation = _lexer.Current.EndLocation
             };
         }
 
@@ -745,9 +680,36 @@ namespace TeaScript.Parser {
             //  GotoStatement :
             //    goto Identifier ;
 
-            return new GotoStatement() {
+            GotoStatement ret = new GotoStatement() {
                 StartLocation = _lexer.Read().StartLocation,
-                Label = MatchToken(TokenType.Case) ? null : ExpectToken(TokenType.Identifier).LiteralBuffer.ToString(),
+            };
+
+            switch (_lexer.Peek().Type) {
+                case TokenType.Identifier:
+                    ret.Label = _lexer.Read().LiteralBuffer.ToString();
+                    break;
+                case TokenType.Case:
+                    ret.LabelExpression = ParseExpression();
+                    break;
+                default:
+                    ErrorReporter.Error("应输入标签名", _lexer.Peek().StartLocation, _lexer.Peek().EndLocation);
+                    break;
+            }
+
+            ret.EndsWithsSemicolon = MatchToken(TokenType.Semicolon);
+            ret.EndLocation = _lexer.Current.EndLocation;
+
+            return ret;
+        }
+
+        private BreakStatement ParseBreakStatement() {
+
+            //  BreakStatement :
+            //    break ;
+
+            return new BreakStatement() {
+                StartLocation = _lexer.Read().StartLocation,
+                EndsWithsSemicolon = MatchToken(TokenType.Semicolon),
                 EndLocation = _lexer.Current.EndLocation
             };
         }
@@ -755,19 +717,38 @@ namespace TeaScript.Parser {
         private ContinueStatement ParseContinueStatement() {
 
             //  ContinueStatement :
-            //    continue;
+            //    continue ;
 
             return new ContinueStatement() {
-                StartLocation = _lexer.Read().StartLocation
+                StartLocation = _lexer.Read().StartLocation,
+                EndsWithsSemicolon = MatchToken(TokenType.Semicolon),
+                EndLocation = _lexer.Current.EndLocation
             };
         }
 
         private ImportStatement ParseImportStatement() {
 
-            return new ImportStatement() {
+            //  ImportStatement :
+            //    import Key ;
+            //    import Key => Identifier ;
+
+            ImportStatement ret = new ImportStatement() {
                 StartLocation = _lexer.Read().StartLocation,
-                Expression = ParseExpression()
+                Expression = ParseKey()
             };
+
+            if (MatchToken(TokenType.AssignTo)) {
+                if (_lexer.Peek().Type == TokenType.Identifier) {
+                    ret.AsModuleName = _lexer.Current.LiteralBuffer.ToString();
+                } else {
+                    ErrorReporter.Error("应输入标识符", _lexer.Peek().StartLocation, _lexer.Peek().EndLocation);
+                }
+            }
+
+            ret.EndsWithSemicolon = MatchToken(TokenType.Semicolon);
+            ret.EndLocation = _lexer.Current.EndLocation;
+
+            return ret;
 
         }
 
@@ -778,7 +759,9 @@ namespace TeaScript.Parser {
 
             return new ReturnStatement() {
                 StartLocation = _lexer.Read().StartLocation,
-                Expression = ParseExpression()
+                Expression = FollowsWithExpression() ? ParseExpression() : null,
+                EndsWithsSemicolon = MatchToken(TokenType.Semicolon),
+                EndLocation = _lexer.Current.EndLocation
             };
 
         }
@@ -814,7 +797,7 @@ namespace TeaScript.Parser {
                 TryClause = ParseStatementExceptEmptyStatement()
             };
 
-            if(MatchToken(TokenType.Catch)){
+            if (MatchToken(TokenType.Catch)) {
                 ret.CatchClause = ParseStatementExceptEmptyStatement();
             }
 
@@ -828,13 +811,12 @@ namespace TeaScript.Parser {
         private LetStatement ParseLetStatement() {
 
             //  LetStatement :
-            //    let ExpressionStatement Statement
+            //    let Condition Statement
 
             return new LetStatement() {
                 StartLocation = _lexer.Read().StartLocation,
                 InitExpression = ParseCondition(),
-                Body = ParseStatementExceptEmptyStatement(),
-                EndLocation = _lexer.Current.EndLocation
+                Body = ParseStatementExceptEmptyStatement()
             };
 
         }
@@ -842,13 +824,12 @@ namespace TeaScript.Parser {
         private LockStatement ParseLockStatement() {
 
             //  LockStatement :
-            //    lock ExpressionStatement Statement
+            //    lock Condition Statement
 
             return new LockStatement() {
                 StartLocation = _lexer.Read().StartLocation,
                 Condition = ParseCondition(),
-                Body = ParseStatementExceptEmptyStatement(),
-                EndLocation = _lexer.Current.EndLocation
+                Body = ParseStatementExceptEmptyStatement()
             };
 
         }
@@ -863,39 +844,285 @@ namespace TeaScript.Parser {
             //    NamespaceDeclaration
             //    ExtendDeclaration
 
+            //  ClassDeclaration :
+            //    class DeclarationBody
+
+            //  StructDeclaration :
+            //    class DeclarationBody
+
+            //  EnumDeclaration :
+            //    enum DeclarationBody
+
+            //  InterfaceDeclaration :
+            //    interface DeclarationBody
+
+            //  NamespaceDeclaration :
+            //    namespace DeclarationBody
+
+            //  ExtendDeclaration :
+            //    extend DeclarationBody
+
+            //  DeclarationBody :
+            //    Identifier TypeBase? { TypeBody? }
+
+            //  TypeBase :
+            //    : TypeList
+
+            //  TypeList :
+            //    Type
+            //    TypeList , Type
+
+            //  TypeBody :
+            //    MemberDeclaration
+            //    TypeBody MemberDeclaration
+
+            //  MemberDeclaration :
+            //    FieldDeclaration
+            //    MethodDeclaration
+            //    PropertyDeclaration
+            //    DeclarationStatement
+            //    OperatorDeclaration
+            //    AbstractMethodDeclaration
+            //    AbstractPropertyDeclaration
+            //    AbstractOperatorDeclaration
+
+            //  FieldDeclaration :
+            //    Identifier ;
+            //    Identifier = Expression;
+
+            //  MethodDeclaration :
+            //    Identifier { StatementList? }
+            //    Identifier ( ParameterList? ) { StatementList? }
+
+            //  ParameterList :
+            //    Parameter
+            //    ParameterList , Parameter
+
+            //  Parameter :
+            //    Identifier
+            //    Parameter ?
+            //    Parameter : Type
+            //    Parameter = Expression
+            //    Parameter [ ]
+
+            //  PropertyDeclaration :
+            //    get MethodDeclaration
+            //    set MethodDeclaration
+
+            //  OperatorDeclaration :
+            //    Operator ParameterList? { StatementList? }
+
+            //  AbstractMethodDeclaration :
+            //    Identifier ? ;
+            //    Identifier ( ParameterList? ) ? ;
+
+            //  AbstractPropertyDeclaration :
+            //    get AbstractMethodDeclaration
+            //    set AbstractMethodDeclaration
+            //    add AbstractMethodDeclaration
+            //    remove AbstractMethodDeclaration
+
+            //  AbstractOperatorDeclaration :
+            //    Operator ParameterList? ? ;
+
             TypeDeclaration ret = new TypeDeclaration() {
                 StartLocation = _lexer.Read().StartLocation,
                 Type = tokenType,
+                Members = new List<MemberDeclaration>()
             };
+
+            if (MatchToken(TokenType.Identifier)) {
+                ret.Name = _lexer.Current.LiteralBuffer.ToString();
+            } else {
+                ErrorReporter.Error("应输入标识符", _lexer.Peek().StartLocation, _lexer.Peek().EndLocation);
+            }
+
+            if (MatchToken(TokenType.Colon)) {
+                ret.Bases = new List<Expression>();
+            parsenextbase:
+                if (FollowsWithExpression()) {
+                    ret.Bases.Add(ParseType());
+
+                    if (MatchToken(TokenType.Comma)) {
+                        goto parsenextbase;
+                    }
+
+                }
+            }
+
+            // 解析成员。
 
             ExpectToken(TokenType.LBrace);
 
-            switch (_lexer.Peek().Type) {
-                case TokenType.Identifier:
-                    if (_lexer.Peek1().Type == TokenType.Identifier && (CheckIdentifier(_lexer.Peek(), "get") || CheckIdentifier(_lexer.Peek(), "set"))) {
+        parsenext:
 
-                    } else {
-                        TypeDeclaration.MethodDeclaration mm = new TypeDeclaration.MethodDeclaration() {
+            MemberDeclaration mm;
+
+            TokenType type = _lexer.Peek().Type;
+
+            // 解析成员名。
+
+            // name
+            if (type == TokenType.Identifier) {
+
+                // get name
+                if (_lexer.Peek1().Type == TokenType.Identifier && (CheckIdentifier(_lexer.Peek(), "get") || CheckIdentifier(_lexer.Peek(), "set"))) {
+                    mm = new PropertyDeclaration() {
+                        StartLocation = _lexer.Read().StartLocation,
+                        Getter = _lexer.Current.LiteralBuffer[0] == 'g',
+                        Name = _lexer.Read().LiteralBuffer.ToString()
+                    };
+                    // get [
+                } else if (_lexer.Peek1().Type == TokenType.LBrack && (CheckIdentifier(_lexer.Peek(), "get") || CheckIdentifier(_lexer.Peek(), "set"))) {
+                    mm = new PropertyDeclaration() {
+                        StartLocation = _lexer.Read().StartLocation,
+                        Getter = _lexer.Current.LiteralBuffer[0] == 'g',
+                        Name = null
+                    };
+                    ExpectToken(TokenType.LBrack);
+                    ExpectToken(TokenType.RBrack);
+                    // name
+                } else {
+                    mm = new MethodDeclaration() {
+                        StartLocation = _lexer.Read().StartLocation,
+                        Name = _lexer.Current.LiteralBuffer.ToString()
+                    };
+                }
+
+            } else if ((type >= TokenType.Not && type <= TokenType.Sub) || (type >= TokenType.Mul && type <= TokenType.Gte) || type == TokenType.Eq || type == TokenType.Ne || type == TokenType.Period || type == TokenType.For || type == TokenType.Trace) {
+                mm = new OperatorDeclaration() {
+                    StartLocation = _lexer.Read().StartLocation,
+                    Operator = _lexer.Current.Type
+                };
+            } else if (type >= TokenType.Class && type <= TokenType.Extend) {
+                ret.Members.Add( ParseTypeDeclaration(type) );
+                goto parsenext;
+            } else {
+
+                switch (type) {
+                    case TokenType.As:
+                        mm = new AsOperatorDeclaration() {
                             StartLocation = _lexer.Read().StartLocation,
+                            Value = ParseType()
+                        };
+                        break;
+                    case TokenType.RBrace:
+                        mm = null;
+                        break;
+                    default:
+                        ErrorReporter.Error("应输入成员名", _lexer.Peek().StartLocation, _lexer.Peek().EndLocation);
+                        goto case TokenType.RBrace;
+
+                }
+
+
+            }
+
+            if (mm != null) {
+
+                ret.Members.Add(mm);
+
+                // 解析参数。
+
+                if (MatchToken(TokenType.LParam)) {
+
+
+                    mm.Parameters = new List<MemberDeclaration.Parameter>();
+
+                parsenextparam:
+
+                    if (MatchToken(TokenType.Identifier)) {
+
+                        MemberDeclaration.Parameter p = new MemberDeclaration.Parameter() {
+                            StartLocation = _lexer.Current.StartLocation,
                             Name = _lexer.Current.LiteralBuffer.ToString()
                         };
 
-                        if(MatchToken(TokenType.LParam)){
+                        bool conditionalParsed = false;
+                        bool colonParsed = false;
+                        bool eqParsed = false;
 
-                            mm.Parameters.Add(new TypeDeclaration.Parameter() {
-                               // Name = ExpectToken()
+                    parsenextmark:
 
-                            });
+                        if (!conditionalParsed && MatchToken(TokenType.Conditional)) {
+                            conditionalParsed = true;
+                            p.HasDefaultValue = true;
+                            goto parsenextmark;
+                        }
 
+                        if (!colonParsed && MatchToken(TokenType.Colon)) {
+                            colonParsed = true;
+                            p.Type = ParseType();
+                            goto parsenextmark;
+                        }
+
+                        if (!eqParsed && MatchToken(TokenType.Eq)) {
+                            eqParsed = true;
+                            p.DefaultValue = ParseExpression();
+                            goto parsenextmark;
+                        }
+
+                        p.EndLocation = _lexer.Current.EndLocation;
+
+                        mm.Parameters.Add(p);
+
+                        if (MatchToken(TokenType.Comma)) {
+                            goto parsenextparam;
                         }
 
                     }
-                    break;
+
+                    ExpectToken(TokenType.RParam);
+
+                }
+
+
+
+                // 解析主体。
+
+                if (MatchToken(TokenType.Assign)) {
+                    mm.InitExpression = ParseExpression();
+                } else if (_lexer.Peek().Type == TokenType.LBrace) {
+                    mm.Body = ParseFunctionLiteral();
+                } else if (_lexer.Peek().Type == TokenType.VarOr) {
+                    mm.Body = ParseConditionalFunctionLiteral();
+                }
+
+                mm.EndsWithSemicolon = MatchToken(TokenType.Semicolon);
+
+                mm.EndLocation = _lexer.Current.EndLocation;
+
+                goto parsenext;
+
             }
 
-            ExpectToken(TokenType.RBrace);
+            ret.EndLocation = ExpectToken(TokenType.RBrace).EndLocation;
 
             return ret;
+        }
+
+        private Expression ParseType() {
+            if (MatchToken(TokenType.Identifier)) {
+                Expression expr = new Identifier() {
+                    StartLocation = _lexer.Current.StartLocation,
+                    Name = _lexer.Current.LiteralBuffer.ToString(),
+                };
+
+                while (MatchToken(TokenType.Period)) {
+                    expr = new PropertyCallExpression() {
+                        Target = expr,
+                        Argument = ParseKey()
+                    };
+                }
+                return expr;
+            } else {
+                Error("应输入类型");
+
+                return new EmptyExpression() {
+                    StartLocation = _lexer.Current.StartLocation,
+                };
+
+            }
         }
 
         #endregion
@@ -906,7 +1133,26 @@ namespace TeaScript.Parser {
         /// 解析表达式。
         /// </summary>
         /// <returns>表达式节点。</returns>
-        private Expression ParseExpression(byte currentPrecedence = 1) {
+        private Expression ParseExpression() {
+            Expression ret = ParseExpression(2);
+
+            // 如果目前上下文没有省略括号，并且标识符之后如果没有换行，且紧跟了表达式，则认为是省略括号的函数。
+            if (AllowMissingFunctionCallQuote && !_lexer.Peek().HasLineTerminatorBeforeStart && FollowsWithExpression() && (ret is PropertyCallExpression || ret is Identifier)) {
+                ret = new FunctionCallExpression() {
+                    Target = ret,
+                    Arguments = ParseFunctionCallArguments(),
+                    EndLocation = _lexer.Current.EndLocation
+                };
+            }
+
+            return ret;
+        }
+
+        /// <summary>
+        /// 解析表达式。
+        /// </summary>
+        /// <returns>表达式节点。</returns>
+        private Expression ParseExpression(byte currentPrecedence) {
 
             // Expression :
             //   UnaryExpression
@@ -957,7 +1203,7 @@ namespace TeaScript.Parser {
                         break;
                     }
 
-                    if (type >= TokenType.Not && type <= TokenType.Dec) {
+                    if (type >= TokenType.Not && type <= TokenType.Sub) {
                         left = new UnaryExpression() {
                             StartLocation = _lexer.Read().StartLocation,
                             Expression = ParseExpression(type.GetPrecedence()),
@@ -991,16 +1237,17 @@ namespace TeaScript.Parser {
                                 Expression = ParseExpression(type.GetPrecedence())
                             };
                             break;
-                        case TokenType.Conditional:
-                            left = new CheckExpression() {
+                        case TokenType.VarOr:
+                            left = _lexer.Peek1().Type == TokenType.LBrace ? (Expression)ParseConditionalFunctionLiteral() : (Expression)new CheckExpression() {
                                 StartLocation = _lexer.Read().StartLocation,
                                 Expression = ParseExpression(type.GetPrecedence())
                             };
                             break;
                         default:
-                            Error("{0} 不能作为表达式的一部分。", _lexer.Read().LiteralBuffer.ToString());
+                            _lexer.Read();
+                            ErrorReporter.Error(String.Format("无效的表达式项 \"{0}\"", _lexer.Current.ToString()), _lexer.Current.StartLocation, _lexer.Current.EndLocation);
                             return new EmptyExpression() {
-                                StartLocation = _lexer.Current.EndLocation
+                                StartLocation = _lexer.Current.StartLocation
                             };
                     }
                     break;
@@ -1008,9 +1255,10 @@ namespace TeaScript.Parser {
             }
 
             return ParseExpression(left, currentPrecedence);
+
         }
 
-        private Expression ParseExpression(Expression left, byte currentPrecedence = 1) {
+        private Expression ParseExpression(Expression left, byte currentPrecedence) {
 
             //  PostfixExpression :
             //    MemberExpression
@@ -1035,7 +1283,7 @@ namespace TeaScript.Parser {
                         _lexer.Read();
                         left = new PropertyCallExpression() {
                             Target = left,
-                            Argument = ParsePropertyCallArgument()
+                            Argument = ParseKey()
                         };
                         continue;
                     case TokenType.LParam:
@@ -1050,7 +1298,7 @@ namespace TeaScript.Parser {
                         _lexer.Read();
                         left = new IndexCallExpression() {
                             Target = left,
-                            Argument = ParseExpression(),
+                            Arguments = ParseFunctionCallArguments(),
                             EndLocation = ExpectToken(TokenType.RBrack).EndLocation
                         };
                         continue;
@@ -1066,7 +1314,7 @@ namespace TeaScript.Parser {
                     continue;
                 }
 
-                if (type >= TokenType.Add && type <= TokenType.To) {
+                if (type >= TokenType.Add && type <= TokenType.Is) {
                     _lexer.Read();
                     left = new BinaryExpression() {
                         Left = left,
@@ -1094,7 +1342,7 @@ namespace TeaScript.Parser {
                         _lexer.Read();
                         left = new ChainCallExpression() {
                             Target = left,
-                            Argument = ParseExpression(ParsePropertyCallArgument(), (byte)(TokenType.PeriodChain.GetPrecedence() + 1))
+                            Argument = ParseExpression(ParseKey(), (byte)(TokenType.PeriodChain.GetPrecedence() + 1))
                         };
                         continue;
                     case TokenType.Inc:
@@ -1109,6 +1357,16 @@ namespace TeaScript.Parser {
                         }
 
                         break;
+                    //case TokenType.As:
+                    //case TokenType.Is:
+                    //    _lexer.Read();
+                    //    left = new BinaryExpression() {
+                    //        Left = left,
+                    //        Operator = type,
+                    //        Right = ParseType()
+                    //    };
+                    //    continue;
+
                     case TokenType.Comma:
                         _lexer.Read();
                         left = new CommaExpression() {
@@ -1122,114 +1380,37 @@ namespace TeaScript.Parser {
                 break;
             }
 
-
-            // 如果目前上下文没有省略括号，并且标识符之后如果没有换行，且紧跟了表达式，则认为是省略括号的函数。
-            if (AllowMissingFunctionCallQuote && !_lexer.Peek().HasLineTerminatorBeforeStart && FollowsWithPrimaryExpression() && (left is PropertyCallExpression || left is Identifier)) {
-                left = new FunctionCallExpression() {
-                    Target = left,
-                    Arguments = ParseFunctionCallArguments(),
-                    EndLocation = _lexer.Current.EndLocation
-                };
-            }
-
             return left;
         }
 
         private bool FollowsWithExpression() {
             TokenType type = _lexer.Peek().Type;
-            return type >= TokenType.Identifier && type <= TokenType.Sub;
+            return type >= TokenType.Identifier && type <= TokenType.VarOr;
         }
 
-        private bool FollowsWithPrimaryExpression() {
-            TokenType type = _lexer.Peek().Type;
-            return type >= TokenType.Identifier && type <= TokenType.Not;
-        }
+        //private bool FollowsWithPrimaryExpression() {
+        //    TokenType type = _lexer.Peek().Type;
+        //    return type >= TokenType.Identifier && type <= TokenType.Not;
+        //}
 
         /// <summary>
         /// 解析点之后的属性表达式。
         /// </summary>
         /// <returns></returns>
-        private Expression ParsePropertyCallArgument() {
+        private Expression ParseKey() {
 
-            Expression p = TryParsePropertyName();
+            Expression p = TryParseKey();
             if (p != null) {
                 return p;
             }
 
-            Error("需要合法的属性名");
+            ErrorReporter.Error("应输入标识符", _lexer.Peek().StartLocation, _lexer.Peek().EndLocation);
             return new EmptyExpression() {
                 StartLocation = _lexer.Read().EndLocation
             };
         }
 
-        private List<FunctionCallExpression.Argument> ParseFunctionCallArguments() {
-
-            //  CallExpression :
-            //    MemberExpression Arguments?
-            //    MemberExpression ( Arguments? )
-
-            //  Arguments :
-            //    Elision
-            //    Argument
-            //    Arguments Elision Argument
-
-            //  Argument :
-            //    UnaryExpression
-            //    PropertyName : UnaryExpression
-            //    PropertyName => UnaryExpression
-
-            List<FunctionCallExpression.Argument> ret = new List<FunctionCallExpression.Argument>();
-
-        parsenext:
-            switch (_lexer.Peek().Type) {
-                case TokenType.RParam:
-                    _lexer.Read();
-                    return ret;
-                case TokenType.EOF:
-                    break;
-                default:
-                    Expression propName = TryParsePropertyName();
-                    if (propName != null) {
-                        switch (_lexer.Peek().Type) {
-                            case TokenType.Colon:
-                                _lexer.Read();
-                                ret.Add(new FunctionCallExpression.Argument() {
-                                    Name = propName,
-                                    Value = ParseExpression((byte)(TokenType.Comma.GetPrecedence() + 1))
-                                });
-                                break;
-                            case TokenType.AssignTo:
-                                _lexer.Read();
-                                ret.Add(new FunctionCallExpression.Argument() {
-                                    Name = propName,
-                                    IsOut = true,
-                                    Value = ParseExpression((byte)(TokenType.Comma.GetPrecedence() + 1))
-                                });
-                                break;
-                            default:
-                                ret.Add(new FunctionCallExpression.Argument() {
-                                    Value = ParseExpression(propName, (byte)(TokenType.Comma.GetPrecedence() + 1))
-                                });
-                                break;
-                        }
-
-                    } else {
-                        ret.Add(new FunctionCallExpression.Argument() {
-                            Value = ParseExpression((byte)(TokenType.Comma.GetPrecedence() + 1))
-                        });
-                    }
-
-                    if (MatchToken(TokenType.Comma)) {
-                        goto parsenext;
-                    }
-
-                    break;
-            }
-
-            return ret;
-        }
-
-        private Expression TryParsePropertyName() {
+        private Expression TryParseKey() {
 
             //  PropertyName :
             //    Identifier
@@ -1251,45 +1432,96 @@ namespace TeaScript.Parser {
                         EndLocation = _lexer.Current.StartLocation,
                     };
                 case TokenType.LParam:
-                    return ParseExpression();
+                    return ParseExpression(2);
                 default:
                     return null;
             }
         }
 
-        private Expression ParseListOrDictLiteral() {
+        private List<FunctionCallExpression.Argument> ParseFunctionCallArguments() {
 
-             //ListOrDictLiteral :
-             //   ListLiteral
-             //   DictLiterals
+            //  CallExpression :
+            //    MemberExpression Arguments?
+            //    MemberExpression Arguments? ,
+            //    MemberExpression ( Arguments? )
+            //    MemberExpression ( Arguments? , )
 
-             // ListLiteral :
-             //   [ Elision? ElementList? Elision? ]
+            //  Arguments :
+            //    Argument
+            //    Arguments , Argument
 
-             // ElementList :
-             //   AssignmentExpression
-             //   ElementList Elision AssignmentExpression
+            //  Argument :
+            //    UnaryExpression
+            //    PropertyName : ToExpression
+            //    PropertyName => ToExpression
 
-             // DictLiteral :
-             //   { }
-             //   { Elision? PropertyNameAndValueList Elision? }
+            List<FunctionCallExpression.Argument> ret = new List<FunctionCallExpression.Argument>();
 
-             // PropertyNameAndValueList :
-             //   PropertyName : AssignmentExpression
-             //   PropertyNameAndValueList Elision PropertyName : AssignmentExpression
-
-             // Elision :
-             //   ,
-             //   Elision ,
-
-            Location start = _lexer.Read().StartLocation;
-            TokenType type;
-
-            while ((type = _lexer.Peek().Type) == TokenType.Comma) {
-                type = _lexer.Read().Type;
+        parsenext:
+            if (FollowsWithExpression()) {
+                Expression propName = TryParseKey();
+                if (propName != null) {
+                    switch (_lexer.Peek().Type) {
+                        case TokenType.Colon:
+                            _lexer.Read();
+                            ret.Add(new FunctionCallExpression.Argument() {
+                                Name = propName,
+                                Value = ParseExpression((byte)(TokenType.Comma.GetPrecedence() + 1))
+                            });
+                            break;
+                        case TokenType.AssignTo:
+                            _lexer.Read();
+                            ret.Add(new FunctionCallExpression.Argument() {
+                                Name = propName,
+                                IsOut = true,
+                                Value = ParseExpression((byte)(TokenType.Comma.GetPrecedence() + 1))
+                            });
+                            break;
+                        default:
+                            ret.Add(new FunctionCallExpression.Argument() {
+                                Value = ParseExpression(propName, (byte)(TokenType.Comma.GetPrecedence() + 1))
+                            });
+                            break;
+                    }
+                } else {
+                    ret.Add(new FunctionCallExpression.Argument() {
+                        Value = ParseExpression((byte)(TokenType.Comma.GetPrecedence() + 1))
+                    });
+                }
+                if (MatchToken(TokenType.Comma)) {
+                    goto parsenext;
+                }
             }
 
-            if (type == TokenType.RBrack) {
+            return ret;
+        }
+
+        private Expression ParseListOrDictLiteral() {
+
+            // ListOrDictLiteral :
+            //   ListLiteral
+            //   DictLiterals
+
+            // ListLiteral :
+            //   [ ElementList? ]
+            //   [ ElementList? , ]
+
+            // ElementList :
+            //   AssignmentExpression
+            //   ElementList , ToExpression
+
+            // DictLiteral :
+            //   [ : ]
+            //   [ PropertyNameAndValueList ,? ]
+
+            // PropertyNameAndValueList :
+            //   PropertyName : ToExpression
+            //   PropertyNameAndValueList , PropertyName : ToExpressions
+
+            Location start = _lexer.Read().StartLocation;
+
+            // []
+            if (MatchToken(TokenType.RBrack)) {
                 return new ListLiteral() {
                     StartLocation = start,
                     Values = new List<Expression>(),
@@ -1297,140 +1529,104 @@ namespace TeaScript.Parser {
                 };
             }
 
-            if (type == TokenType.Colon) {
-                while ((type = _lexer.Peek().Type) == TokenType.Comma) {
-                    type = _lexer.Read().Type;
-                }
-                ExpectToken(TokenType.RBrack);
+            // [:]
+            if (MatchToken(TokenType.Colon)) {
                 return new DictLiteral() {
                     StartLocation = start,
                     Values = new List<DictLiteral.Property>(),
-                    EndLocation = _lexer.Current.EndLocation
+                    EndLocation = ExpectToken(TokenType.RBrack).EndLocation
                 };
             }
 
-            if (!FollowsWithExpression()) {
-                return new EmptyExpression() {
-                    StartLocation = start
-                };
-            }
+            Expression maybeKey = TryParseKey();
 
-            Expression firstValue = ParseExpression((byte)(TokenType.Comma.GetPrecedence() + 1));
-
-            type = _lexer.Peek().Type;
-
-            if (type == TokenType.Colon) {
-                if (!FollowsWithExpression()) {
-                    return new DictLiteral() {
-                        StartLocation = start,
-                        Values = new List<DictLiteral.Property>() {
-                            new DictLiteral.Property {
-                                Key = firstValue,
-                                Value = new EmptyExpression(){StartLocation = _lexer.Current.EndLocation}
-                            }
-                        }
-                    };
-                }
+            if (maybeKey != null && MatchToken(TokenType.Colon)) {
 
                 DictLiteral ret = new DictLiteral() {
                     StartLocation = start,
                     Values = new List<DictLiteral.Property>() {
                         new DictLiteral.Property {
-                            Key = firstValue,
+                            Key = maybeKey,
                             Value = ParseExpression((byte)(TokenType.Comma.GetPrecedence() + 1))
                         }
                     }
                 };
 
-                type = _lexer.Peek().Type;
+                while (MatchToken(TokenType.Comma)) {
 
-                while (type == TokenType.Comma) {
-                    _lexer.Read();
+                    maybeKey = TryParseKey();
 
-                    type = _lexer.Peek().Type;
-
-                    switch (type) {
-                        case TokenType.RBrack:
-                            _lexer.Read();
-                            break;
-                        case TokenType.Comma:
-                            continue;
-                        case TokenType.EOF:
-                            Error("缺少 ]");
-                            break;
-                        default:
-
-                            Expression left = TryParsePropertyName();
-
-                            ExpectToken(TokenType.Colon);
-
-                            if (!FollowsWithExpression()) {
-                                break;
-                            }
-
-                            ret.Values.Add(new DictLiteral.Property() {
-                                Key = left,
-                                Value = ParseExpression((byte)(TokenType.Comma.GetPrecedence() + 1))
-                            });
-                            continue;
+                    if (maybeKey == null) {
+                        break;
                     }
 
-                    break;
+                    ExpectToken(TokenType.Colon);
+
+                    ret.Values.Add(new DictLiteral.Property() {
+                        Key = maybeKey,
+                        Value = ParseExpression((byte)(TokenType.Comma.GetPrecedence() + 1))
+                    });
+
                 }
 
                 ret.EndLocation = ExpectToken(TokenType.RBrack).EndLocation;
                 return ret;
+
             } else {
                 ListLiteral ret = new ListLiteral() {
                     StartLocation = start,
                     Values = new List<Expression>(){
-                        firstValue
+                         null ==maybeKey ? ParseExpression((byte)(TokenType.Comma.GetPrecedence() + 1)) : ParseExpression(maybeKey, (byte)(TokenType.Comma.GetPrecedence() + 1))
                     }
                 };
 
-                while (type == TokenType.Comma) {
-                    _lexer.Read();
-
-                    type = _lexer.Peek().Type;
-
-                    switch (type) {
-                        case TokenType.RBrack:
-                            _lexer.Read();
-                            break;
-                        case TokenType.Comma:
-                            continue;
-                        case TokenType.EOF:
-                            Error("缺少 ]");
-                            break;
-                        default:
-
-                            if (!FollowsWithExpression()) {
-                                break;
-                            }
-
-                            ret.Values.Add(ParseExpression((byte)(TokenType.Comma.GetPrecedence() + 1)));
-                            continue;
-                    }
-
-                    break;
+                while (MatchToken(TokenType.Comma) && FollowsWithExpression()) {
+                    ret.Values.Add(ParseExpression((byte)(TokenType.Comma.GetPrecedence() + 1)));
                 }
 
                 ret.EndLocation = ExpectToken(TokenType.RBrack).EndLocation;
                 return ret;
+
             }
 
         }
 
-        private Expression ParseFunctionLiteral() {
+        private FunctionLiteral ParseConditionalFunctionLiteral() {
+
+            //  ConditionalFunctionLiteral:
+            //    |{ StatementList? }
+
+            Location start = _lexer.Read().StartLocation;
+            MatchToken(TokenType.LBrace);
+
+            return new FunctionLiteral() {
+                StartLocation = start,
+                Conditional = true,
+                Statements = ParseBlockBody(),
+                EndLocation = ExpectToken(TokenType.RBrace).EndLocation
+            };
+        }
+
+        private FunctionLiteral ParseFunctionLiteral() {
 
             //  FunctionLiteral:
             //    { StatementList? }
 
             return new FunctionLiteral() {
                 StartLocation = _lexer.Read().StartLocation,
-                Statements = ParseStatementList(),
+                Statements = ParseBlockBody(),
                 EndLocation = ExpectToken(TokenType.RBrace).EndLocation
             };
+        }
+
+        #endregion
+
+        #region DocComment
+
+        string DocComment;
+
+        private void ParseDocComment() {
+            DocComment = _lexer.Read().LiteralBuffer.ToString();
         }
 
         #endregion

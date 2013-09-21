@@ -234,7 +234,7 @@ namespace TeaScript.CodeDom {
     /// <summary>
     /// 表示一个分号。
     /// </summary>
-    public class Semicolon : EmptyStatement {
+    public class Semicolon : Statement {
 
         /// <summary>
         /// 获取或设置节点结束位置。
@@ -441,8 +441,16 @@ namespace TeaScript.CodeDom {
             /// 获取或设置节点结束位置。
             /// </summary>
             public override Location EndLocation {
-                get;
-                set;
+                get {
+                    return Statements.Count > 0 ? Statements[Statements.Count - 1].EndLocation : Label.EndLocation;
+                }
+                set {
+                    if (Statements.Count > 0) {
+                        Statements[Statements.Count - 1].EndLocation = value;
+                    } else {
+                        Label.EndLocation = value;
+                    }
+                }
             }
 
             /// <summary>
@@ -672,6 +680,21 @@ namespace TeaScript.CodeDom {
             set;
         }
 
+        /// <summary>
+        /// 获取或设置节点结束位置。
+        /// </summary>
+        public override Location EndLocation {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// 获取或设置当前语句是否有分号结尾。
+        /// </summary>
+        public bool EndsWithsSemicolon {
+            get;
+            set;
+        }
 
     }
 
@@ -679,18 +702,6 @@ namespace TeaScript.CodeDom {
     /// 表示一个Continue语句。
     /// </summary>
     public class ContinueStatement : JumpStatement {
-
-        /// <summary>
-        /// 获取或设置节点结束位置。
-        /// </summary>
-        public override Location EndLocation {
-            get {
-                return StartLocation + 8;
-            }
-            set {
-                StartLocation = value - 8;
-            }
-        }
 
         public override void Write(IndentedTextWriter writer) {
             writer.WriteLine("continue");
@@ -706,18 +717,6 @@ namespace TeaScript.CodeDom {
     /// 表示一个Break语句。
     /// </summary>
     public class BreakStatement : JumpStatement {
-
-        /// <summary>
-        /// 获取或设置节点结束位置。
-        /// </summary>
-        public override Location EndLocation {
-            get {
-                return StartLocation + 5;
-            }
-            set {
-                StartLocation = value - 5;
-            }
-        }
 
         public override void Write(IndentedTextWriter writer) {
             writer.WriteLine("break");
@@ -735,14 +734,6 @@ namespace TeaScript.CodeDom {
     public class GotoStatement : JumpStatement {
 
         /// <summary>
-        /// 获取或设置节点结束位置。
-        /// </summary>
-        public override Location EndLocation {
-            get;
-            set;
-        }
-
-        /// <summary>
         /// 获取层。
         /// </summary>
         public string Label {
@@ -750,9 +741,22 @@ namespace TeaScript.CodeDom {
             set;
         }
 
+        /// <summary>
+        /// 获取层。
+        /// </summary>
+        public Expression LabelExpression {
+            get;
+            set;
+        }
+
         public override void Write(IndentedTextWriter writer) {
             writer.Write("goto ");
-            writer.Write(Label);
+            if (Label == null) {
+                writer.Write("case ");
+                LabelExpression.Write(writer);
+            } else {
+                writer.Write(Label);
+            }
             writer.WriteLine();
         }
 
@@ -775,23 +779,6 @@ namespace TeaScript.CodeDom {
             set;
         }
 
-        /// <summary>
-        /// 获取结束位置。
-        /// </summary>
-        /// <value></value>
-        public override Location EndLocation {
-            get {
-                return Expression == null ? StartLocation + 6 : Expression.EndLocation;
-            }
-            set {
-                if (Expression != null) {
-                    Expression.EndLocation = value;
-                } else {
-                    StartLocation = value - 6;
-                }
-            }
-        }
-
         public override void Write(IndentedTextWriter writer) {
             writer.Write("return");
             if (Expression != null) {
@@ -812,23 +799,6 @@ namespace TeaScript.CodeDom {
     /// 表示一个Throw表达式。
     /// </summary>
     public class ThrowStatement : JumpStatement {
-
-        /// <summary>
-        /// 获取结束位置。
-        /// </summary>
-        /// <value></value>
-        public override Location EndLocation {
-            get {
-                return Expression == null ? StartLocation + 5 : Expression.EndLocation;
-            }
-            set {
-                if (Expression != null) {
-                    Expression.EndLocation = value;
-                } else {
-                    StartLocation = value - 5;
-                }
-            }
-        }
 
         /// <summary>
         /// 获取表达式。
@@ -860,23 +830,6 @@ namespace TeaScript.CodeDom {
     public class YieldStatement : JumpStatement {
 
         /// <summary>
-        /// 获取结束位置。
-        /// </summary>
-        /// <value></value>
-        public override Location EndLocation {
-            get {
-                return Expression == null ? StartLocation + 5 : Expression.EndLocation;
-            }
-            set {
-                if (Expression != null) {
-                    Expression.EndLocation = value;
-                } else {
-                    StartLocation = value - 5;
-                }
-            }
-        }
-
-        /// <summary>
         /// 获取表达式。
         /// </summary>
         public Expression Expression {
@@ -900,6 +853,54 @@ namespace TeaScript.CodeDom {
         //}
     }
 
+    /// <summary>
+    /// 表示一个可调试语句。
+    /// </summary>
+    public class AssertStatement : JumpStatement {
+
+        public Expression Body {
+            get;
+            set;
+        }
+
+        //public Expression Throws {
+        //    get;
+        //    set;
+        //}
+
+        ///// <summary>
+        ///// 获取结束位置。
+        ///// </summary>
+        ///// <value></value>
+        //public override Location EndLocation {
+        //    get {
+        //        return Throws == null ? Body.EndLocation : Throws.EndLocation;
+        //    }
+        //    set {
+        //        if (Throws != null) {
+        //            Throws.EndLocation = value;
+        //        } else {
+        //            Body.EndLocation = value;
+        //        }
+        //    }
+        //}
+
+        public override void Write(IndentedTextWriter writer) {
+            writer.Write("assert ");
+            Body.Write(writer);
+
+            //if (Throws != null) {
+            //    writer.Write(" throw ");
+            //    Throws.Write(writer);
+            //}
+        }
+
+        //[System.Diagnostics.DebuggerStepThrough]
+        //public override void Accept(IAstVisitor visitor) {
+        //    visitor.VisitDebuggerStatement(this);
+        //}
+    }
+
     #endregion
 
     #region Other Statement
@@ -910,12 +911,8 @@ namespace TeaScript.CodeDom {
     public class TryStatement : Statement {
 
         public override Location StartLocation {
-            get {
-                return TryClause.StartLocation;
-            }
-            set {
-                TryClause.StartLocation = value;
-            }
+            get;
+            set;
         }
 
         public override Location EndLocation {
@@ -1072,62 +1069,6 @@ namespace TeaScript.CodeDom {
     }
 
     /// <summary>
-    /// 表示一个可调试语句。
-    /// </summary>
-    public class AssertStatement : Statement {
-
-        /// <summary>
-        /// 获取或设置节点结束位置。
-        /// </summary>
-        public override Location StartLocation {
-            get;
-            set;
-        }
-
-        public Expression Body {
-            get;
-            set;
-        }
-
-        public Expression Throws {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// 获取结束位置。
-        /// </summary>
-        /// <value></value>
-        public override Location EndLocation {
-            get {
-                return Throws == null ? Body.EndLocation : Throws.EndLocation;
-            }
-            set {
-                if (Throws != null) {
-                    Throws.EndLocation = value;
-                } else {
-                    Body.EndLocation = value;
-                }
-            }
-        }
-
-        public override void Write(IndentedTextWriter writer) {
-            writer.Write("assert ");
-            Body.Write(writer);
-
-            if (Throws != null) {
-                writer.Write(" throw ");
-                Throws.Write(writer);
-            }
-        }
-
-        //[System.Diagnostics.DebuggerStepThrough]
-        //public override void Accept(IAstVisitor visitor) {
-        //    visitor.VisitDebuggerStatement(this);
-        //}
-    }
-
-    /// <summary>
     /// 表示一个Yield语句。
     /// </summary>
     public class TraceStatement : Statement {
@@ -1139,7 +1080,6 @@ namespace TeaScript.CodeDom {
             get;
             set;
         }
-
 
         /// <summary>
         /// 获取结束位置。
@@ -1162,6 +1102,14 @@ namespace TeaScript.CodeDom {
         /// 获取表达式。
         /// </summary>
         public Expression Expression {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// 获取或设置当前语句是否有分号结尾。
+        /// </summary>
+        public bool EndsWithsSemicolon {
             get;
             set;
         }
@@ -1183,7 +1131,7 @@ namespace TeaScript.CodeDom {
     }
 
     /// <summary>
-    /// 表示一个Yield语句。
+    /// 表示一个import语句。
     /// </summary>
     public class ImportStatement : Statement {
 
@@ -1191,6 +1139,11 @@ namespace TeaScript.CodeDom {
         /// 获取或设置节点结束位置。
         /// </summary>
         public override Location StartLocation {
+            get;
+            set;
+        }
+        
+        public bool EndsWithSemicolon {
             get;
             set;
         }
@@ -1216,6 +1169,14 @@ namespace TeaScript.CodeDom {
         /// 获取表达式。
         /// </summary>
         public Expression Expression {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// 获取表达式。
+        /// </summary>
+        public string AsModuleName {
             get;
             set;
         }
@@ -1241,29 +1202,9 @@ namespace TeaScript.CodeDom {
     #region Declarations
 
     /// <summary>
-    /// 表示一个表达式语句。
+    /// 表示成员的定义。
     /// </summary>
-    public class TypeDeclaration : Statement {
-
-        public abstract class MemberDeclaration : Node {
-
-            /// <summary>
-            /// 获取或设置节点结束位置。
-            /// </summary>
-            public override Location StartLocation {
-                get;
-                set;
-            }
-
-            /// <summary>
-            /// 获取或设置节点结束位置。
-            /// </summary>
-            public override Location EndLocation {
-                get;
-                set;
-            }
-
-        }
+    public abstract class MemberDeclaration : Statement {
 
         public class Parameter : Node {
 
@@ -1303,38 +1244,23 @@ namespace TeaScript.CodeDom {
                 set;
             }
 
-        }
-
-        public class MethodDeclaration : MemberDeclaration {
-
-            /// <summary>
-            /// 获取或设置节点结束位置。
-            /// </summary>
-            public override Location StartLocation {
-                get;
-                set;
-            }
-
-            /// <summary>
-            /// 获取或设置节点结束位置。
-            /// </summary>
-            public override Location EndLocation {
-                get;
-                set;
-            }
-
-            public string Name {
-                get;
-                set;
-            }
-
-            public List<Parameter> Parameters {
-                get;
-                set;
+            public override void Write(IndentedTextWriter writer) {
+                writer.Write(Name);
+                if (HasDefaultValue && DefaultValue == null) {
+                    writer.Write('?');
+                }
+                if (Type != null) {
+                    writer.Write(':');
+                    Type.Write(writer);
+                }
+                if (DefaultValue != null) {
+                    writer.Write('=');
+                    DefaultValue.Write(writer);
+                }
             }
 
         }
-             
+
         /// <summary>
         /// 获取或设置节点结束位置。
         /// </summary>
@@ -1351,12 +1277,167 @@ namespace TeaScript.CodeDom {
             set;
         }
 
+        public FunctionLiteral Body {
+            get;
+            set;
+        }
+
+        public Expression InitExpression {
+            get;
+            set;
+        }
+
+        public List<Parameter> Parameters {
+            get;
+            set;
+        }
+
+        public bool EndsWithSemicolon {
+            get;
+            set;
+        }
+
+        protected void WriteParameters(IndentedTextWriter writer) {
+            if (Parameters != null) {
+                writer.Write('(');
+
+                bool appendComma = false;
+                foreach(var p in Parameters){
+                    if (appendComma) {
+                        writer.Write(',');
+                        writer.Write(' ');
+                    } else {
+                        appendComma = true;
+                    }
+
+                    p.Write(writer);
+                }
+
+                writer.Write(')');
+            }
+        }
+
+    }
+
+    public class MethodDeclaration : MemberDeclaration {
+
+        public string Name {
+            get;
+            set;
+        }
+
+        public override void Write(IndentedTextWriter writer) {
+            writer.Write(Name);
+            WriteParameters(writer);
+
+            if(Body != null)
+                Body.Write(writer);
+            else if (InitExpression != null) {
+                writer.Write('=');
+                InitExpression.Write(writer);
+            }
+
+            if (EndsWithSemicolon)
+                writer.Write(';');
+        }
+
+    }
+
+    public class OperatorDeclaration : MemberDeclaration {
+
+        public TokenType Operator {
+            get;
+            set;
+        }
+
+        public override void Write(IndentedTextWriter writer) {
+            writer.Write(Operator.GetName());
+            WriteParameters(writer);
+
+            if (Body != null)
+                Body.Write(writer);
+            else if (InitExpression != null) {
+                writer.Write('=');
+                InitExpression.Write(writer);
+            }
+
+            if (EndsWithSemicolon)
+                writer.Write(';');
+        }
+
+    }
+
+    public class PropertyDeclaration : MemberDeclaration {
+
+        public bool Getter {
+            get;
+            set;
+        }
+
+        public string Name {
+            get;
+            set;
+        }
+
+        public override void Write(IndentedTextWriter writer) {
+            writer.Write(Getter ? "get " : "set ");
+            writer.Write(Name);
+            WriteParameters(writer);
+
+            if (Body != null)
+                Body.Write(writer);
+            else if (InitExpression != null) {
+                writer.Write('=');
+                InitExpression.Write(writer);
+            }
+
+            if (EndsWithSemicolon)
+                writer.Write(';');
+        }
+
+    }
+
+    public class AsOperatorDeclaration : MemberDeclaration {
+
+        public Expression Value {
+            get;
+            set;
+        }
+
+        public override void Write(IndentedTextWriter writer) {
+            writer.Write("as ");
+            writer.Write(Value);
+            WriteParameters(writer);
+
+            if (Body != null)
+                Body.Write(writer);
+            else if (InitExpression != null) {
+                writer.Write('=');
+                InitExpression.Write(writer);
+            }
+
+            if (EndsWithSemicolon)
+                writer.Write(';');
+        }
+
+    }
+            
+    /// <summary>
+    /// 表示一个表达式语句。
+    /// </summary>
+    public class TypeDeclaration : MemberDeclaration {
+
         public TokenType Type {
             get;
             set;
         }
 
-        public Expression Extends {
+        public string Name {
+            get;
+            set;
+        }
+
+        public List<Expression> Bases {
             get;
             set;
         }
@@ -1367,7 +1448,46 @@ namespace TeaScript.CodeDom {
         }
 
         public override void Write(IndentedTextWriter writer) {
-            
+
+            writer.Write(Type.GetName());
+
+            writer.Write(' ');
+
+            writer.Write(Name);
+
+            if (Bases != null) {
+                writer.Write('(');
+
+                bool appendComma = false;
+                foreach (var p in Bases) {
+                    if (appendComma) {
+                        writer.Write(',');
+                        writer.Write(' ');
+                    } else {
+                        appendComma = true;
+                    }
+
+                    p.Write(writer);
+                }
+
+                writer.Write(')');
+            }
+
+
+            writer.WriteLine('{');
+            writer.Indent++;
+
+
+
+            foreach (var aa in Members) {
+                aa.Write(writer);
+                writer.WriteLine();
+            }
+
+
+
+            writer.Indent--;
+            writer.Write('}');
         }
     }
 

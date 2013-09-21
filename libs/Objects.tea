@@ -67,7 +67,7 @@ class Scope {
 
 interface IEnumerable {
 
-	for?
+	for
 	
 	as ICollection {
 		return this.("get length")? this as Array : this as List;
@@ -226,13 +226,13 @@ interface IEnumerable {
 
 interface ICollection : IEnumerable {
 
-	get length?
+	get length;
 	
-	set length?
+	set length;
 	
-	get [@at]?
+	get [];
 	
-	set [@at]?
+	set [];
 	
 	get [@start, @end = this.length] {
 		return Range(data: this, start: @start, end: @end, itemType: this.itemType);
@@ -526,11 +526,11 @@ class String {
 struct DateTime {
 
 	DateTime(Int value) {
-		this.%data = value;
+		this.@data = value;
 	}
 	
 	DateTime(Int year:1970, Int month:0,Int day:0, Int hour:0, Int minute:0, Int second:0) {
-		this.%data = year + month + day + hour + minute + second;
+		this.@data = year + month + day + hour + minute + second;
 	}
 	
 	add(Int year) {

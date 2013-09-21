@@ -182,11 +182,6 @@ namespace TeaScript.CodeDom {
         /// </summary>
         Dec,
 
-        /// <summary>
-        /// ?
-        /// </summary>
-        Conditional,
-
         #endregion
 
         #region Binary
@@ -202,14 +197,19 @@ namespace TeaScript.CodeDom {
         Sub,
 
         /// <summary>
-        /// *
+        /// |
         /// </summary>
-        Mul,
+        VarOr,
 
         /// <summary>
         /// &amp;
         /// </summary>
         VarAnd,
+
+        /// <summary>
+        /// *
+        /// </summary>
+        Mul,
 
         /// <summary>
         /// /
@@ -242,16 +242,6 @@ namespace TeaScript.CodeDom {
         Gte,
 
         /// <summary>
-        /// as
-        /// </summary>
-        As,
-
-        /// <summary>
-        /// is
-        /// </summary>
-        Is,
-
-        /// <summary>
         /// ==
         /// </summary>
         Eq,
@@ -260,11 +250,6 @@ namespace TeaScript.CodeDom {
         /// !=
         /// </summary>
         Ne,
-
-        /// <summary>
-        /// |
-        /// </summary>
-        VarOr,
 
         /// <summary>
         /// &amp;&amp;
@@ -285,6 +270,16 @@ namespace TeaScript.CodeDom {
         /// ~
         /// </summary>
         To,
+
+        /// <summary>
+        /// as
+        /// </summary>
+        As,
+
+        /// <summary>
+        /// is
+        /// </summary>
+        Is,
 
         /// <summary>
         /// ,
@@ -348,6 +343,11 @@ namespace TeaScript.CodeDom {
         /// ..
         /// </summary>
         PeriodChain,
+
+        /// <summary>
+        /// ?
+        /// </summary>
+        Conditional,
 
         #endregion
 

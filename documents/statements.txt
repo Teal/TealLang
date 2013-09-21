@@ -7,6 +7,12 @@ for(;;){}
 for(a=1;a<66;a++){}
 for(a<6){}
 for(a in b){}
+for ;; {}
+for a=1;a<66;a++ {}
+for a<6 {}
+for a in b {}
+for {}
+
 
 continue;
 break;
