@@ -1,0 +1,184 @@
+
+extend IEnumeratable<T> {
+	
+	#region 查询
+	
+	/// 将当前可迭代的对象转为等效的数组。
+	as T[] {
+		return this as List<T> as T[];
+	}
+	
+	/// 将当前可迭代的对象转为等效的列表。
+	as List<T> {
+		var ret = new List<T>();
+		for(var value in this) {
+			ret.add(value);
+		}
+		return ret;
+	}
+	
+	/// 将当前可迭代的对象转为等效的列表。
+	as IList<T> {
+		return this as List<T>;
+	}
+	
+	/// 将当前可迭代的对象转为等效的集合。
+	as ICollection<T> {
+		return this as IList<T>;
+	}
+	
+	// 获取指定索引处的项。
+	T [int index : index >= 0] {
+		get {
+			var iterator = getIterator();
+			while(index-- >= 0){
+				iterator.moveNext();
+			}
+			return iterator.current;
+		}
+	}
+	
+	// 获取指定区间的子集。
+	IEnumerator<T> [Interval interval] {
+		get {
+			for(var i = interval.start to interval.end){
+				yield this[i];
+			}
+		}
+		set {
+			assert value.count() == range.length;
+			var i = range.start;
+			for(var item in value){
+				this[i++] = item;
+			}
+		}
+	}
+	
+	/// 统计当前集合中元素的个数。
+	int count() {
+		int num = 0;
+		for(var value in this) num++;
+		return num;
+	}
+	
+	int indexOf(T value){
+		int index = 0;
+		for(var item in this){
+			if(item == value){
+				return index;
+			}
+			index++;
+		}
+		return -1;
+	}
+	
+	int indexOf(T value, Interval range){
+		int index = range.start;
+		for(var item in this[range]){
+			if(item == value){
+				return index;
+			}
+			index++;
+		}
+		return -1;
+	}
+	
+	int indexOf(T->bool where){
+		int index = 0;
+		for(var item in this){
+			if(where(item)){
+				return index;
+			}
+			index++;
+		}
+		return -1;
+	}
+
+	int indexOf(T->bool where, Interval range){
+		int index = range.start;
+		for(var item in this[range]){
+			if(where(item)){
+				return index;
+			}
+			index++;
+		}
+		return -1;
+	}
+
+	bool contains(T value) {
+		return this.indexOf(value) != -1;
+	}
+	
+	T find(T->bool where){
+		for(var item in this){
+			if(where(item)){
+				return item;
+			}
+		}
+		return T.defaultValue;
+	}
+
+	void copyTo(IIterator<T> dest, Interval from) {
+		#todo
+	}
+	
+	void each(Func<void, T> iterator){
+		for(var value in this){
+			iterator(value);
+		}
+	}
+	
+	bool each(Func<bool, T> iterator){
+		for(var value in this){
+			if(!iterator(value)){
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	#endregion
+	
+	#region 转换
+	
+	IEnumerator<T> where(Func<bool, T> predicate){
+		for(var value in this){
+			if(predicate(value)){
+				yield value;
+			}
+		}
+	}
+	
+	IEnumerator<TReturn> select<TReturn>(Func<TReturn, T> selector) {
+		for(var value in this){
+			yield selector(value);
+		}
+	}
+	
+	void update(Func<T, T> updater) {
+		for(ref var value in this){
+			value = updater(value);
+		}
+	}
+	
+	IEnumerator<T> desc(){
+		#todo
+	}
+	
+	IEnumerator<T> distinct(){
+		#todo
+	}
+	
+	@dynamicInvoke
+	IEnumerator<T> order(){
+		return order((x, y) -> x < y);
+	}
+	
+	IEnumerator<T> order((T, T)->bool sorter){
+		#todo
+	}
+	
+	#endregion
+	
+
+}

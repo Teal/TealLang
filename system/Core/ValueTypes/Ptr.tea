@@ -1,0 +1,17 @@
+﻿/************************************************
+ * Copyright (c) xuld.  All rights reserved.
+ ************************************************/
+
+
+
+/// 表示一个指针。
+struct Ptr<T> {
+	extern Ptr<T> +(int offset);
+	extern Ptr<T> -(int offset);
+
+	@returnByRef
+	extern T [int offset]{get;set;}
+
+	///// 将当前指针转换为等效的引用对象。
+	//extern as T();
+}

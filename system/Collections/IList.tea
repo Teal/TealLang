@@ -1,0 +1,18 @@
+﻿
+/// 表示一个列表。
+interface IList<T> : ICollection<T> {
+	
+	// 获取或设置当前列表的指定项。
+	T [int index]{ get; set; }
+	
+	/// 向当前列表指定索引插入项。
+	/// @param index 要插入的项的索引。
+	/// @param item 要添加的对象。
+	void addAt(int index, T item);
+	
+	/// 从当前集合中移除指定索引的项。
+	/// @param index 要移除的项的索引。
+	/// @remark 对于使用连续存储的数据结构（如 @List<T>），删除某一项将会导致之后的项上移以确保数据仍然是连续的，因此在这个情况下 @removeAt 的复杂度是 O(n)。
+	void removeAt(int index);
+	
+}

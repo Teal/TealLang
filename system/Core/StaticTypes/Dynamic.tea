@@ -1,0 +1,84 @@
+/************************************************
+ * Copyright (c) xuld.  All rights reserved.
+ ************************************************/
+
+
+
+/// 处理动态对象的所有操作。
+static class Dynamic {
+	
+	/// 获取指定对象指定字段或属性的值。
+	static object getValue(object target, string propertyName){
+		Type type = target.getType();
+
+		Property property = type.getProperty(propertyName);
+		if(property != null) {
+			return property.getValue(target);
+		}
+
+		Field field = type.getField(propertyName);
+		if(field != null) {
+			return field.getValue(target);
+		}
+
+		throw new DynamicCallException("Object has no property or field named $propertyName");
+	}
+
+	/// 设置指定对象指定字段或属性的值。
+	static void setPropertyValue(object target, string propertyName, object value){
+		Type type = target.getType();
+
+		Property property = type.getProperty(propertyName);
+		if(property != null) {
+			return property.setValue(target, value);
+		}
+
+		Field field = type.getField(propertyName);
+		if(field != null) {
+			return field.setValue(target, value);
+		}
+
+		throw new DynamicCallException("Object has no property or field named $propertyName.");
+	}
+
+	/// 调用指定对象指定方法。
+	static object call(object target, string methodName, params object[] arguments){
+		Type type = target.getType();
+
+		Method method = type.getMethod(methodName, arguments.map(arg -> arg.getType()));
+		if(method != null) {
+			return method.call(target, arguments);
+		}
+
+		object value;
+
+		Property property = type.getProperty(propertyName);
+		if(property != null) {
+			value = property.getValue(target);
+			goto doCall;
+		}
+
+		Field field = type.getField(propertyName);
+		if(field != null) {
+			value = field.getValue(target);
+			goto doCall;
+		}
+
+		throw new DynamicCallException("Object has no method named $methodName.");
+
+	doCall:
+
+		if(value is Func) {
+			return Func(value).invoke(arguments);
+		}
+
+		throw new DynamicCallException("The value of $methodName is not a function.");
+
+	}
+
+	/// 将指定的对象转换为指定的类型。
+	static T cast<T>(object target) {
+		#todo
+	}
+
+}

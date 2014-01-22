@@ -1,0 +1,288 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"tr",
+				"true"
+			],
+			[
+				"val",
+				"value"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "system/Core/RefrenceTypes/Object.tea",
+			"settings":
+			{
+				"buffer_size": 712,
+				"line_ending": "Windows"
+			}
+		}
+	],
+	"build_system": "Packages/User/tea_sublime.sublime-build",
+	"command_palette":
+	{
+		"height": 73.0,
+		"selected_items":
+		[
+			[
+				"C#",
+				"Set Syntax: C#"
+			],
+			[
+				"set",
+				"Set Syntax: Tea"
+			],
+			[
+				"",
+				"Set Syntax: Plain Text"
+			]
+		],
+		"width": 490.0
+	},
+	"console":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/E/window/Tea/libs/system/Collections/IEnumeratable.tea",
+		"/E/window/Tea/libs/system/Collections/ICollection.tea",
+		"/E/window/Tea/libs/system/Collections/IEnumerator.tea",
+		"/E/window/Tea/libs/system/Collections/IList.tea",
+		"/E/window/Tea/libs/system/IO/FileStream.tea",
+		"/E/window/Tea/libs/system/RefrenceTypes/Member.tea",
+		"/E/window/Tea/_ref/openjdk/jdk/src/share/classes/java/io/InputStream.java",
+		"/E/window/Tea/libs/system/Interfaces/ICloseable.tea",
+		"/E/window/Tea/libs/system/RefrenceTypes/Method.tea",
+		"/E/window/Tea/libs/system/IO/Stream.tea",
+		"/E/window/Tea/_ref/mscorlib/System/IO/FileStream.cs",
+		"/E/window/Tea/libs/system/RefrenceTypes/Stream.tea",
+		"/E/window/Tea/libs/system/RefrenceTypes/FileStream.tea",
+		"/E/window/Tea/_ref/mscorlib/System/IO/Stream.cs",
+		"/E/window/Tea/_ref/openjdk/jdk/test/java/nio/channels/SocketChannel/Stream.java",
+		"/E/window/Tea/libs/system/RefrenceTypes/Object.tea",
+		"/E/window/Tea/libs/system/StaticTypes/Trace.tea",
+		"/E/window/Tea/_ref/rust-master/src/libsyntax/lib.rs",
+		"/E/window/llvm/vs2013/bin/Debug/hello.ll",
+		"/E/window/Tea/_ref/rust-master/src/libnative/io/process.rs",
+		"/E/window/clang/vs2013/bin/Debug/help.txt",
+		"/E/window/Tea/_ref/rust-master/src/libsyntax/parse/parser.rs",
+		"/E/window/Tea/_ref/mscorlib/System/Type.cs",
+		"/E/window/Tea/_ref/mscorlib/System/Reflection/MemberInfo.cs",
+		"/E/window/Tea/libs/system/InternalMethods/Allocator.tea",
+		"/E/window/Tea/libs/system/RefrenceTypes/Type.tea",
+		"/E/window/Tea/libs/system/InternalMethods/GC.tea",
+		"/E/window/Tea/libs/system/InternalMethods/Dynamic.tea",
+		"/E/window/Tea/libs/system/ValueTypes/ValueType.tea",
+		"/E/window/Tea/libs/system/RefrenceTypes/Array.tea",
+		"/E/window/Tea/_ref/openjdk/jdk/src/share/classes/sun/tools/java/Type.java",
+		"/E/window/Tea/_ref/openjdk/jdk/src/share/classes/java/lang/reflect/Array.java",
+		"/E/window/Tea/_ref/openjdk/jdk/src/share/classes/sun/tools/java/ArrayType.java",
+		"/E/window/Tea/libs/system/ValueTypes/BaseTypes.tea",
+		"/E/window/Tea/libs/system/Interfaces/IArithmetic.tea",
+		"/E/window/Tea/libs/system/RefrenceTypes/String.tea",
+		"/E/window/Tea/_ref/mscorlib/System/UInt32.cs",
+		"/E/window/Tea/libs/system/ValueTypes/Int.tea",
+		"/E/window/Tea/libs/system/ValueTypes/Ptr.tea",
+		"/E/window/Tea/libs/system/ValueTypes/Enum.tea",
+		"/E/window/Tea/libs/system/ValueTypes/UInt.tea",
+		"/E/window/Tea/_ref/mscorlib/System/Int32.cs",
+		"/E/window/Tea/_ref/openjdk/jdk/src/share/classes/java/lang/Integer.java",
+		"/E/window/Tea/_ref/mscorlib/System/Number.cs",
+		"/E/window/Tea/libs/system/ValueTypes/Long.tea",
+		"/F/软件/编程开发/Sublime Text 3/Packages/Tea/Tea.tmLanguage",
+		"/E/window/Tea/libs/system/RefrenceTypes/Exception.tea",
+		"/E/window/Tea/libs/system/ValueTypes/NumberStyle.tea",
+		"/E/window/Tea/libs/system/ValueTypes/Interval.tea",
+		"/E/window/Tea/documents/test.tea",
+		"/E/window/Tea/libs/gui/Button.tea",
+		"/F/软件/编程开发/Sublime Text 3/Data/Packages/User/Preferences.sublime-settings",
+		"/F/软件/编程开发/Sublime Text 3/Data/Packages/User/tea_sublime.sublime-build",
+		"/F/软件/编程开发/Sublime Text 3/Packages/Tea/Tea.tmLanguage2",
+		"/F/软件/编程开发/Sublime Text 3/Packages/Tea.sublime-package.rar"
+	],
+	"find":
+	{
+		"height": 38.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"SafeFileHandle",
+			"~Strem",
+			"extern",
+			"MemberTypes",
+			"getChars",
+			"digits",
+			"DigitOnes",
+			"getChars",
+			"sizeTable",
+			"stringSize",
+			"toString",
+			"buf",
+			"<key>patterns</key>",
+			"source.tea",
+			"source.cs",
+			"implicit",
+			"using"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "system/Core/RefrenceTypes/Object.tea",
+					"semi_transient": true,
+					"settings":
+					{
+						"buffer_size": 712,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								147,
+								147
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Tea/Tea.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 38.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 214.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"project": "tealibs.sublime-project",
+	"replace":
+	{
+		"height": 72.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 188.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

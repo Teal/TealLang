@@ -1,0 +1,56 @@
+﻿/************************************************
+ * Copyright (c) xuld.  All rights reserved.
+ ************************************************/
+
+/// 表示 64 位有符号的整数。
+struct Long {
+	
+	/// 表示 Int32 的最大可能值。
+	const long maxValue = 0x7fffffff;
+	
+	/// 表示 Int32 的最小可能值。
+	const long minValue = -2147483648;
+	
+	override int getHashCode() {
+		return this;
+	}
+	
+	string toString(string format){
+	
+	}
+	
+	override string toString() {
+		#todo
+	}
+	
+	static as int(string value){
+		#todo
+	}
+	
+	@implicit
+	extern as long();
+	
+	extern as ulong();
+	
+	extern as short();
+	
+	extern as uint();
+	
+	extern as byte();
+	
+	extern as bool();
+	
+	/// 判断当前对象是否和指定的对象相等。
+	extern bool == (int value);
+	
+	extern int +(int value);
+	
+	extern int -(int value);
+	
+	extern int *(int value);
+	
+	extern int /(int value);
+	
+	extern int ^(int value);
+}
+

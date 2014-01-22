@@ -1,0 +1,36 @@
+/************************************************
+ * Copyright (c) xuld.  All rights reserved.
+ ************************************************/
+
+/// 表示一个可比较的对象。
+interface IComparable<T> {
+
+	/// 将当前对象和指定对象进行比较。
+	/// @return 如果返回 0 ，说明两者相等；如果返回大于 0 的值，说明 @this 大于 @other；否则说明 @this 小于 @other 。
+	int -(T other);
+
+	bool >= (T other) {
+		return (this - other) >= 0;
+	}
+
+	bool <= (T other) {
+		return (this - other) <= 0;
+	}
+
+	bool > (T other) {
+		return (this - other) > 0;
+	}
+
+	bool < (T other) {
+		return (this - other) < 0;
+	}
+
+	bool == (T other) {
+		return (this - other) == 0;
+	}
+
+	bool != (T other) {
+		return (this - other) != 0;
+	}
+
+}

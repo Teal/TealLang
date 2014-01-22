@@ -1,0 +1,33 @@
+/// 提供最底层的系统 API。
+namespace Native {
+
+	#region Object
+
+	extern object memberwiseClone(object o);
+	extern Type getType(object o);
+	extern int getHashCode(object o);
+	
+	/// 判断指定的实例是否是相同的实例。
+	extern bool referenceEquals(object obj1, object obj2);
+	
+	extern bool isNull(object o);
+	
+	#endregion
+	
+	extern int bitOr(int valueA, int valueB);
+	extern int bitAnd(int valueA, int valueB);
+	extern int bitXor(int valueA, int valueB);
+	
+	extern int shiftLeft(int valueA, int valueB);
+	extern int shiftRight(int valueA, int valueB);
+	
+	extern int add(int valueA, int valueB);
+	extern int subtract(int valueA, int valueB);
+	extern int multiply(int valueA, int valueB);
+	extern int divide(int valueA, int valueB);
+	extern int module(int valueA, int valueB);
+	
+}
+
+
+

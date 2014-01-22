@@ -1,0 +1,15 @@
+﻿/************************************************
+ * Copyright (c) xuld.  All rights reserved.
+ ************************************************/
+
+
+
+/// 为所有值类型提供抽象基类。
+abstract class ValueType {
+	
+	override extern int getHashCode();
+	
+	/// 重载 == 运算。
+	extern bool ==(ValueType other);
+	
+}

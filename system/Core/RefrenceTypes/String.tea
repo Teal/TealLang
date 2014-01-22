@@ -1,0 +1,161 @@
+/************************************************
+ * Copyright (c) xuld.  All rights reserved.
+ ************************************************/
+
+/// 表示一个字符串。
+final class String : IComparable<string>, IClonable<string>, IEnumerable<char> {
+
+	/// 获取当前字符串的长度。
+	readonly int length;
+	
+	/// 获取当前字符串的等效 char 指针。
+	Ptr<char> data {
+		get {
+			return ((this as Ptr as int) + (Ptr.size + 4)) as Ptr<char>;
+		}
+	}
+
+	char [int index] { 
+		get{
+			return data[index];
+		}
+	}
+	
+	String(int length) {
+		string newString = Allocator.alloc(typeof(String), length) as string;
+		newString.length = length;
+		return newString;
+	}
+
+	/// 将指定的数组转为等效的字符串。
+	String(Ptr<char> buffer) {
+		string newString = new String(Stdlib.wstrlen(buffer));
+		Stdlib.wstrncpy(newString.data, buffer, newString.length);
+		return newString;
+	}
+
+	String(char[] buffer) {
+		string newString = new String(buffer.length);
+		Stdlib.wstrncpy(newString.data, buffer.data, newString.length);
+		return newString;
+	}
+
+	/// 将指定的数组转为等效的字符串。
+	/// 该方法直接将数组内存和字符串共享。
+	static string staticCast(char[] buffer) {
+		Ptr bufferPtr = buffer as Ptr;
+		bufferPtr[0] = typeof(string);
+		return bufferPtr as string;
+	}
+	
+	/// 将当前对象转为等效的字符串。
+	override string toString() {
+		return this;
+	}
+	
+	/// 将当前对象转为等效的布尔值。
+	as bool {
+		return length > 0;
+	}
+
+	/// 判断当前对象是否和指定的对象相等。
+	bool == (string other) {
+
+		if(length != other.length) {
+			return false;
+		}
+
+		if(this as object == other as object) {
+			return true;
+		}
+
+		return Stdlib.wstrncmp(data, other.data, length) == 0;
+	}
+
+	string +(string other) {
+		string newString = new String(length + other.length);
+		Stdlib.wstrncpy(Stdlib.wstrncpy(newString.data, data, length), other.data, other.length);
+		return newString;
+	}
+
+	string *(int count) {
+		string newString = new String(length * count);
+		Ptr<char> t = newString.data;
+		while(count-- > 0) {
+			t = Stdlib.wstrncpy(t, t, length);
+		}
+		return newString;
+	}
+
+	extern int IComparable<string>.-(string other) {
+
+		int lengthOffset = length - other.length;
+
+		if(lengthOffset) {
+			return lengthOffset;
+		}
+
+		if(this as object == other as object) {
+			return 0;
+		}
+
+		return Stdlib.wstrncmp(data, other.data, length);
+	}
+	
+	/// 重写当前对象在被调试输出时的表现形式。
+	void >() {
+		Trace.writeLine(encode(this));
+	}
+
+	IEnumerator<char> IEnumerable<char>.getEnumerator(){
+		for(int i = 0; i < length; i++) {
+			yield this[i];
+		}
+	}
+
+	string clone() {
+		String ret = new String(length);
+		Stdlib.wstrncpy(ret.data, data, length);
+		return ret;
+	}
+	
+	/// 使用语法本身表示一个字符串。
+	string encode(char quote = '"') {
+		StringBuilder sb = new StringBuilder(length + 2);
+		sb.add(quote);
+		for (char c in this) {
+			switch (c) {
+				case "\'":
+					sb.add("\\\'");
+				case "\"":
+					sb.add("\\\"");
+				case "\\":
+					sb.add("\\\\");
+				case "\n":
+					sb.add("\\n");
+				case "\r":
+					sb.add("\\r");
+				case "\t":
+					sb.add("\\t");
+				case "\0":
+					sb.add("\\0");
+				case "\a":
+					sb.add("\\a");
+				case "\b":
+					sb.add("\\b");
+				case "\f":
+					sb.add("\\f");
+				case "\v":
+					sb.add("\\v");
+				case else:
+					sb.add(c);
+			}
+		}
+		sb.add(quote);
+		return sb.toString();
+	}
+	
+}
+
+
+

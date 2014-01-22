@@ -1,0 +1,51 @@
+
+/// 表示一个列表。
+interface IList<T> : ICollection<T> {
+	
+	// 获取当前列表指定项
+	T [int index];
+	
+	IIterator<T> [params Range range] {
+		get {
+			for(var i = range.start; i < range.end; i++){
+				yield this[i];
+			}
+		}
+		set {
+			assert value.count() == range.length;
+			var i = range.start;
+			for(var item in value){
+				this[i++] = item;
+			}
+		}
+	}
+	
+	/// 向当前列表指定索引插入项。
+	/// @index: 要插入的项的索引。
+	/// @item: 要添加的对象。
+	void addAt(int index, T item);
+	
+	/// 向当前列表指定索引插入项。
+	/// @index: 要插入的项的索引。
+	/// @items: 要添加的对象。
+	void addAt(int index, params T[] items){
+		for(var item in items) {
+			addAt(index++, item);
+		}
+	}
+	
+	/// 从当前集合中移除指定索引的项。
+	/// @index: 要移除的项的索引。
+	/// Remark: 对于使用连续存储的数据结构（如 @List<T>），删除某一项将会导致之后的项上移以确保数据仍然是连续的，因此在这个情况下 @removeAt 的复杂度是 O(n)。
+	void removeAt(int index);
+	
+	/// 从当前集合中移除指定区域的项。
+	/// @range: 要移除的项的区域。
+	/// Remark: 对于使用连续存储的数据结构（如 @List<T>），删除某一项将会导致之后的项上移以确保数据仍然是连续的，因此在这个情况下 @removeAt 的复杂度是 O(n)。
+	void removeAt(Interval interval) {
+		for(var index = interval.end to interval.start){
+			removeAt(index);
+		}
+	}
+	
+}

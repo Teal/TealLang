@@ -1,0 +1,25 @@
+/************************************************
+ * Copyright (c) xuld.  All rights reserved.
+ ************************************************/
+
+
+/// 表示一个可以进行基本运算的类型。
+interface IArithmetic<T> {
+
+	T +();
+	T -();
+
+	T +(T other);
+	T -(T other);
+	T *(T other);
+	T /(T other);
+	T ^(T other);
+
+	bool >(T other);
+	bool >=(T other);
+	bool <(T other);
+	bool <=(T other);
+	bool ==(T other);
+	bool !=(T other);
+
+}

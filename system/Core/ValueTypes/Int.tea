@@ -1,0 +1,301 @@
+﻿/************************************************
+ * Copyright (c) xuld.  All rights reserved.
+ ************************************************/
+
+/// 表示 32 位有符号的整数。
+struct Int : IArithmetic<int> {
+
+	#region 常量
+
+	/// 表示 Int32 的最大可能值。
+	/// @return 2<sup>31</sup>-1 = 2147483647
+	const int maxValue = 0x7fffffff;
+	
+	/// 表示 Int32 的最小可能值。
+	/// @return -2<sup>31</sup> = -2147483648
+	const int minValue = 0x80000000;
+
+	#endregion
+
+	final int _value;
+	
+	override int getHashCode() {
+		return _value;
+	}
+
+	override string toString() {
+
+		const int[] sizeMap = [9, 99, 999, 9999, 99999, 999999, 9999999, 99999999, 999999999, int.maxValue];
+
+    	const char [] digitTens = [
+	        '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+	        '1', '1', '1', '1', '1', '1', '1', '1', '1', '1',
+	        '2', '2', '2', '2', '2', '2', '2', '2', '2', '2',
+	        '3', '3', '3', '3', '3', '3', '3', '3', '3', '3',
+	        '4', '4', '4', '4', '4', '4', '4', '4', '4', '4',
+	        '5', '5', '5', '5', '5', '5', '5', '5', '5', '5',
+	        '6', '6', '6', '6', '6', '6', '6', '6', '6', '6',
+	        '7', '7', '7', '7', '7', '7', '7', '7', '7', '7',
+	        '8', '8', '8', '8', '8', '8', '8', '8', '8', '8',
+	        '9', '9', '9', '9', '9', '9', '9', '9', '9', '9',
+	    ];
+
+	    const char [] digitOnes = [
+	    	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+	        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+	        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+	        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+	        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+	        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+	        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+	        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+	        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+	        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+	    ];
+
+		int stringSize;
+		int value = _value;
+		if(value < 0) {
+			value = -value;
+			stringSize = 2;
+		} else {
+			stringSize = 1;
+		}
+
+		while(value > sizeMap[stringSize]) {
+			stringSize++;
+		}
+
+		char[] buffer = new char[stringSize];
+
+        while (value >= 65536) {
+        	int prevValue = value;
+            value /= 100;
+            int t = prevValue - value * 100;
+            buffer[--stringSize] = digitOnes[t];
+            buffer[--stringSize] = digitTens[t];
+        }
+
+        do {
+        	int prevValue = value;
+            value /= 10;
+            buffer [--stringSize] = digitOnes[prevValue - value * 10];
+        } while(value != 0);
+
+		if(_value < 0) {
+			buffer[0] = c'-';
+		}
+
+        return new String(buffer);
+	}
+
+	string toString(int radix){
+
+		const char[] digits = [
+	        '0' , '1' , '2' , '3' , '4' , '5' ,
+	        '6' , '7' , '8' , '9' , 'a' , 'b' ,
+	        'c' , 'd' , 'e' , 'f' , 'g' , 'h' ,
+	        'i' , 'j' , 'k' , 'l' , 'm' , 'n' ,
+	        'o' , 'p' , 'q' , 'r' , 's' , 't' ,
+	        'u' , 'v' , 'w' , 'x' , 'y' , 'z'
+	    ];
+
+	    const int maxStringLength = 33;
+		
+		int value = _value;
+
+        char[] buffer = new char[maxStringLength];
+        int charPos = maxStringLength - 1;
+
+        if (_value < 0) {
+            value = -value;
+        }
+
+        while (value <= radix) {
+            buffer[charPos--] = digits[value % radix];
+            value /= radix;
+        }
+        buffer[charPos] = digits[value];
+
+        if (_value < 0) {
+            buffer[--charPos] = c'-';
+        }
+
+        return new String(buffer, charPos ~ maxStringLength);
+	}
+
+	string toString(string format) {
+		#todo
+	}
+
+	static bool tryParse(string s, Interval range, int radix, out int value) {
+		value = 0;
+
+		if(s.length < 1) {
+			return false;
+		}
+
+		if(s[range.start] == c'-' || s[range.start] == c'+') {
+			range.start++;
+		}
+
+		for(; range.start < range.end; range.start++) {
+			var t = s[range.start];
+			if(t >= c'0' && t <= c'9') {
+				value = value * radix + t - c'0';
+			} else {
+				t = t.toLower();
+				if(t >= c'a' && t <= c'z'){
+					value = value * radix + t - c'a';
+				} else {
+					return false;
+				}
+			} 
+		}
+
+		if(s[range.start] == c'-') {
+			value = -value;
+		}
+
+		return true;
+	}
+
+	static bool tryParse(string s, int radix, out int value){
+		return tryParse(s, 0 ~ s.length, radix, out value);
+	}
+
+	static bool tryParse(string s, out int value) {
+		value = 0;
+
+		if(s.length < 1) {
+			return false;
+		}
+
+		var index = 0;
+		if(s[0] == c'-' || s[0] == c'+') {
+			index++;
+		}
+
+		for(; index < s.length; index++) {
+			var t = s[index] - c'0';
+			if(t < 0 || t > 9) {
+				return false;
+			}
+			value = value * 10 + t;
+		}
+
+		if(s[0] == c'-') {
+			value = -value;
+		}
+
+		return true;
+	}
+
+	static bool parse(string s) {
+		int val;
+		tryParse(value, out val);
+		return val;
+	}
+
+	static bool parse(string s, int defaultValue) {
+		int val;
+		return tryParse(value, out val) ? val : defaultValue;
+	}
+	
+	static as int(string value){
+		int val;
+		if(tryParse(value, out val)) {
+			return val;
+		}
+		throw new CastException("Can not convert string $value to int");
+	}
+
+	static bool tryDecode(string s, int value) {
+
+        if (s.length == 0) {
+        	value = 0;
+            return false;
+        }
+
+        int index = 0;
+		int radix;
+
+        char firstChar = s[0];
+
+        // 处理符号
+        if (firstChar == c'-' || firstChar == c'+') {
+            index++;
+        }
+
+        switch(s[index]) {
+			case c'0':
+				if(s[index + 1].toLower() == c'x') {
+					index += 2;
+            		radix = 16;
+				} else {
+					index ++;
+            		radix = 8;
+				}
+			case c'#':
+				index ++;
+           	 	radix = 16;
+           	case else:
+           	 	radix = 10;
+        }
+
+        if(tryParse(value, index ~ value.length, radix, out value)){
+        	if(firstChar == c'-') {
+        		value = -value;
+        	}
+        	return true;
+        }
+
+        return false;
+	}
+
+	static int decode(string value) {
+		int val;
+		tryDecode(value, out val);
+		return val;
+	}
+
+	static int decode(string value, int defaultValue) {
+		int val;
+		return tryDecode(value, out val) ? val : defaultValue;
+	}
+
+	@implicit(1)
+	extern as long();
+	
+	@implicit(2)
+	extern as ULong();
+	
+	extern as short();
+	
+	extern as UInt();
+	
+	extern as byte();
+	
+	as bool() {
+		return _value > 0;
+	}
+	
+	extern int +();
+	extern int -();
+
+	extern int +(int value);
+	extern int -(int value);
+	extern int *(int value);
+	extern int /(int value);
+	extern int ^(int value);
+
+	/// 判断当前对象是否和指定的对象相等。
+	extern bool == (int value);
+	extern bool != (int value);
+	
+	extern bool > (int value);
+	extern bool < (int value);
+	extern bool <= (int value);
+	extern bool >= (int value);
+	
+}

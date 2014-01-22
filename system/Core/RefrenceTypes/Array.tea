@@ -1,0 +1,111 @@
+/************************************************
+ * Copyright (c) xuld.  All rights reserved.
+ ************************************************/
+
+
+
+/// 表示一个数组。
+final class Array<T> : IList<T>, IClonable<T> {
+	
+	/// 获取当前数组的长度。
+	readonly int length;
+	
+	/// 获取当前字符串的等效 char 指针。
+	Ptr<T> data {
+		get {
+			return ((this as Ptr as int) + (Ptr.size + 4)) as Ptr<T>;
+		}
+	}
+
+	@returnByRef
+	T [int index] {
+		get{
+			if(index >= length || index < 0) {
+				return T.defaultValue;
+			}
+			return data[index];
+		} 
+		set {
+			if(index >= length || index < 0) {
+				// throw new ArgumentOutOfRangeException("index", "Can not set the value at $index of array.");
+				return;
+			}
+			data[index] = value;
+		}
+	}
+
+	Array(int length) {
+		T[] newArray = Allocator.alloc(typeof(Array<var>), length) as T[];
+		newArray.length = length;
+		return newArray;
+	}
+
+	void copyTo(T[] dest, int srcStartIndex, Interval destRange) {
+		StdLib.memcpy(dest.data + destRange.start, data + srcStartIndex, destRange.length);
+	}
+
+	#region IList<T>
+
+	/// 向当前集合中添加项。
+	/// @param item 要添加的对象。
+	void IList<T>.add(T item) {
+		throw new NotSupportedException();
+	}
+
+	/// 向当前列表指定索引插入项。
+	/// @param index 要插入的项的索引。
+	/// @param item 要添加的对象。
+	void IList<T>.addAt(int index, T item) {
+		throw new NotSupportedException();
+	}
+	
+	/// 从当前集合中移除指定对象的第一个匹配项。
+	/// @param item 要移除的对象。
+	/// @return 如果此次操作成功移除了 @item，则为 true；否则为 false。如果在原始集合中没有找到 @item，此方法也会返回 false。
+	/// @remark 为了确定对象和当前项是否匹配，
+	bool IList<T>.remove(T item) {
+		throw new NotSupportedException();
+	}
+	
+	/// 从当前集合中移除指定索引的项。
+	/// @param index 要移除的项的索引。
+	/// @remark 对于使用连续存储的数据结构（如 @List<T>），删除某一项将会导致之后的项上移以确保数据仍然是连续的，因此在这个情况下 @removeAt 的复杂度是 O(n)。
+	void IList<T>.removeAt(int index) {
+		throw new NotSupportedException();
+	}
+	
+	/// 从当前集合中移除所有项。
+	void IList<T>.clear() {
+		throw new NotSupportedException();
+	}
+
+	#endregion
+
+    /// 创建当前数组的副本。
+    T[] clone() { 
+        return memberwiseClone() as T[];
+    }
+
+	T[] resize(int newSize) {
+		T[] array = new T[newSize];
+    	opyTo(array);
+    	return array;
+	}
+	
+	static void resize(ref T[] array, int newSize) {
+		if(array == null) {
+			array = new T[newSize];
+			return;
+		}
+
+        if (array.length != newSize) {
+        	T[] prevArray = array;
+        	array = new T[newSize];
+        	prevArray.copyTo(array);
+        }
+	}
+
+}
+
+
+

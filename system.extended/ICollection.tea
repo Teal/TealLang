@@ -1,0 +1,69 @@
+
+/// 表示一个集合。
+interface ICollection<T> {
+	
+	/// 获取当前集合中元素的个数。
+	int length { get; }
+	
+	/// 向当前集合中添加项。
+	/// @item: 要添加的对象。
+	void add(T item);
+	
+	/// 向当前集合中添加项。
+	/// @items: 要添加的对象。
+	void add(params T[] items){
+		for(var item in items) {
+			add(item);
+		}
+	}
+	
+	/// 从当前集合中移除指定对象的第一个匹配项。
+	/// @item: 要移除的对象。
+	/// Return: 如果此次操作成功移除了 @item，则为 true；否则为 false。如果在原始集合中没有找到 @item，此方法也会返回 false。
+	/// Remark: 为了确定对象和当前项是否匹配，
+	bool remove(T item);
+	
+	/// 从当前集合中移除指定对象的第一个匹配项。
+	/// @items: 要移除的对象。
+	/// Return: 如果此次操作成功移除了 @item，则为 true；否则为 false。如果在原始集合中没有找到 @item，此方法也会返回 false。
+	/// Remark: 为了确定对象和当前项是否匹配，
+	void remove(params T[] items){
+		for(var i = items.length; --i >= 0;) {
+			remove(items[i]);
+		}
+	}
+	
+	/// 从当前集合中移除所有项。
+	void clear();
+	
+	/// 将当前可迭代的对象转为等效的数组。
+	as T[] {
+		var ret = new T[this.length];
+		var i = 0;
+		for(var value in this) {
+			ret[i++] = value;
+		}
+		return ret;
+	}
+	
+	/// 将当前可迭代的对象转为等效的列表。
+	as List<T> {
+		return new List<T>(this as T[]);
+	}
+	
+	/// 将当前可迭代的对象转为等效的列表。
+	as IList<T> {
+		return this as T[];
+	}
+	
+	/// 统计当前集合中元素的个数。
+	int count() {
+		return length;
+	}
+	
+}
+
+extend ICollection<T> {
+	
+
+}

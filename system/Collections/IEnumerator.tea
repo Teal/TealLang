@@ -1,0 +1,12 @@
+﻿
+/// 表示一个枚举器。
+interface IEnumerator<T> {
+
+	/// 获取集合中的当前元素。
+	T current { get; }
+	
+	/// 移动枚举器到集合中的下一个元素。
+	/// @return 如果成功读取到下一个元素，则返回 true。
+	bool moveNext();
+	
+}

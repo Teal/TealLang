@@ -1,0 +1,45 @@
+/************************************************
+ * Copyright (c) xuld.  All rights reserved.
+ ************************************************/
+
+
+/// 用于调试输出的工具。
+static class Trace {
+
+	/// 获取或设置当前输出的缩进数。
+	static int indent;
+
+	/// 获取或设置当前输出的对象。
+	static TextWriter output = Console.output;
+
+	/// 调试输出指定的变量并换行。
+	static void writeLine(params object[] args){
+
+	}
+
+	/// 调试输出指定的变量并换行。
+	static void writeLine(params string[] args){
+
+	}
+
+	/// 调试输出指定的变量并换行。
+	static void writeLine() {
+		
+	}
+
+	/// 调试输出指定的变量并换行。
+	static void write(params object[] args){
+
+	}
+
+	/// 调试输出指定的变量并换行。
+	static void write(params string[] args){
+
+	}
+
+	/// 清空已输出的内容。
+	static void clear() {
+		output.reset();
+	}
+
+}

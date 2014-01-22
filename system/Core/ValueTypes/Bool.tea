@@ -1,0 +1,48 @@
+﻿/************************************************
+ * Copyright (c) xuld.  All rights reserved.
+ ************************************************/
+
+
+/// 表示布尔值。
+struct Bool : IComparable<bool> {
+	
+	override int getHashCode(){
+		return this ? 1 : 0;
+	}
+	
+	override extern bool equals(object other);
+	
+	override string toString(){
+		return this ? "true" : "false";
+	}
+	
+	int compareTo(bool obj){
+		return this == obj ? 1 : 0;
+	}
+
+	/// 重载 == 运算。
+	extern bool ==(bool other);
+	
+	static bool tryParse(string s, out bool value) {
+		if(s != null) {
+			if(s.equalsIgnoreCase("true")) {
+				value = true;
+				return true;
+			}
+			if(s.equalsIgnoreCase("false")) {
+				value = false;
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	static as bool(string s) {
+		bool value;
+		if(tryParse(s, out value))) {
+			return value;
+		}
+		throw new CastException("无法转换“$s”为bool");
+	}
+
+}

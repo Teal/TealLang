@@ -1,0 +1,98 @@
+﻿/************************************************
+ * Copyright (c) xuld.  All rights reserved.
+ ************************************************/
+
+/// 表示 32 位无符号的整数。
+struct UInt {
+
+	UInt _value;
+	
+	/// 表示 Int32 的最大可能值。
+	const UInt maxValue = 0xffffffff;
+	
+	/// 表示 Int32 的最小可能值。
+	const UInt minValue = 0;
+	
+	override int getHashCode() {
+		return _value;
+	}
+	
+	string toString(string format){
+	
+	}
+	
+	override string toString() {
+		#todo
+	}
+
+	static bool tryParse(string s, out UInt value) {
+		value = 0;
+
+		if(s.length < 1) {
+			return false;
+		}
+
+		for(int i = 0; i < s.length; i++) {
+			var d = s[i] - c'0';
+			if(d < 0 || d > 9) {
+				return false;
+			}
+			value = value * 10 + d;
+		}
+
+		return true;
+	}
+
+	static bool parse(string s) {
+		int val;
+		tryParse(value, out val);
+		return val;
+	}
+
+	static bool parse(string s, int defaultValue) {
+		int val;
+		return tryParse(value, out val) ? val : defaultValue;
+	}
+	
+	static as int(string value){
+		int val;
+		if(tryParse(value, out val)) {
+			return val;
+		}
+		throw new CastException("Can not convert string $value to int");
+	}
+	
+	@implicit(1)
+	extern as long();
+	
+	@implicit(2)
+	extern as ULong();
+	
+	extern as short();
+	
+	extern as UInt();
+	
+	extern as byte();
+	
+	extern as bool();
+	
+	/// 判断当前对象是否和指定的对象相等。
+	extern bool == (int value);
+	extern bool != (int value);
+	
+	extern bool > (int value);
+	extern bool < (int value);
+	extern bool <= (int value);
+	extern bool >= (int value);
+	
+	extern int +(int value);
+	
+	extern int -(int value);
+	
+	extern int *(int value);
+	
+	extern int /(int value);
+	
+	extern int ^(int value);
+}
+

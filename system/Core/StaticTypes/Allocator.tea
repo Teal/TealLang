@@ -1,0 +1,20 @@
+/************************************************
+ * Copyright (c) xuld.  All rights reserved.
+ ************************************************/
+
+
+static class Allocator {
+
+	/// 在堆中申请指定大小的内存。
+	extern static Ptr heapAlloc(int size);
+
+	/// 在堆中释放指定的内存。
+	extern static void heapFree(Ptr value);
+
+	/// 在栈中申请指定大小的内存。
+	extern static Ptr stackAlloc(int size);
+	
+	/// 在堆中申请用于存储指定类型数据的内存。该内存将由 GC 管理。
+	extern static T alloc<T>();	
+	
+}

@@ -1,0 +1,20 @@
+
+class Control {
+
+	ToolTip _toolTip;
+	
+	[category("Appearance")]
+	string toolTip {
+		get { return _toolTip ? _toolTip.tip : null; }
+		set { _toolTip = value ? new ToolTip..text = value : null; }
+	}
+
+	void OnDestroy() {
+		if(_toolTip) {
+			// (Very) Ugly work around for the fact that the parent watcher
+			// won't fire when it's already been disconnected...
+			eInstance_FireSelfWatchers(_toolTip, __ecereProp___ecereNameSpace__ecere__gui__Window_parent);
+			_toolTip = null;
+		}
+   }
+}

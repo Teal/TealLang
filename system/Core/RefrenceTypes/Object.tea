@@ -1,0 +1,58 @@
+/************************************************
+ * Copyright (c) xuld.  All rights reserved.
+ ************************************************/
+
+/// 所有类型的最终基类。
+class Object {
+
+	/// 存储当前对象的类型数据地址。该地址存储了相应的虚函数表。
+	private Type _type;
+	
+	/// 创建当前对象的浅表副本。
+	protected object memberwiseClone() {
+		Ptr newObj = Allocator.alloc(_type);
+		StdLib.memcpy(((this as Ptr as int) + Ptr.size) as Ptr, this as Ptr, _type.size);
+		return newObj as object;
+	}
+
+	/// 获取当前对象的类型。
+	Type getType() {
+		return _type;
+	}
+	
+	/// 获取当前对象的哈希值。
+	virtual int getHashCode() {
+		return this as Ptr as int;
+	}
+	
+	/// 获取当前对象的等效字符串。
+	virtual string toString() {
+		return getType().toString();
+	}
+	
+	/// 将当前对象转为等效的布尔值。
+	@implicit
+	as bool() {
+		return true;
+	}
+	
+	/// 重载 == 运算。
+	bool ==(object other) {
+		return this as Ptr == other as Ptr;
+	}
+	
+	/// 重载当前对象在被调试输出时的表现形式。
+	void >() {
+		Trace.writeLine(getType().fullName, '{');
+		Trace.indent++;
+		for(var field in getType().getMembers(AccessModifiler.$public ^| AccessModifiler.data))) {
+			Trace.write(field.name);
+			Trace.write(':');
+			Trace.writeLine(field.getValue(this));
+		}
+		Trace.indent--;
+		Trace.writeLine('}');
+	}
+
+}
+

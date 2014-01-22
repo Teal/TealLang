@@ -1,0 +1,123 @@
+/// 确定数字转为字符串后使用的样式。
+[flags]
+enum NumberStyles
+{
+	/// 指示不使用任何样式。
+    none,
+	
+	
+
+    /// <summary>指示如果数字字符串包含货币符号，则将其作为货币分析； 否则，会将其作为数字分析。有效的货币符号由 <see cref="T:System.Globalization.NumberFormatInfo" /> 的 <see cref="P:System.Globalization.NumberFormatInfo.CurrencySymbol" /> 属性确定。</summary>
+    [__DynamicallyInvokable]
+    allowCurrencySymbol = 0x100,
+    /// <summary>指示数字字符串可以具有小数点。有效的小数点字符由 <see cref="T:System.Globalization.NumberFormatInfo" /> 的 <see cref="P:System.Globalization.NumberFormatInfo.NumberDecimalSeparator" /> 和 <see cref="P:System.Globalization.NumberFormatInfo.CurrencyDecimalSeparator" /> 属性确定。</summary>
+    [__DynamicallyInvokable]
+    allowDecimalPoint = 0x20,
+    /// <summary>指示数字字符串用于指数符号中。</summary>
+    [__DynamicallyInvokable]
+    AllowExponent = 0x80,
+    /// <summary>指示数值字符串表示一个十六进制值。有效的十六进制值包括数字 0-9 和十六进制数字 A-F 与 a-f。十六进制值的左侧可以用零填充。使用此样式分析的字符串不允许以“0x”为前缀。</summary>
+    [__DynamicallyInvokable]
+    AllowHexSpecifier = 0x200,
+    /// <summary>指示数字字符串可以具有前导符号。有效的前导符号字符是由 <see cref="T:System.Globalization.NumberFormatInfo" /> 的 <see cref="P:System.Globalization.NumberFormatInfo.PositiveSign" /> 和 <see cref="P:System.Globalization.NumberFormatInfo.NegativeSign" /> 属性确定的。</summary>
+    [__DynamicallyInvokable]
+    AllowLeadingSign = 4,
+    /// <summary>指示在分析期间必须忽略前导空白字符。有效的空白字符具有 Unicode 值 U+0009、U+000A、U+000B、U+000C、U+000D 和 U+0020。</summary>
+    [__DynamicallyInvokable]
+    AllowLeadingWhite = 1,
+    /// <summary>指示数字字符串可以具有一对将数字括起来的括号。</summary>
+    [__DynamicallyInvokable]
+    AllowParentheses = 0x10,
+    /// <summary>指示数字字符串可以具有组分隔符，例如将百位与千位分隔开来。有效的组分隔符字符是由 <see cref="T:System.Globalization.NumberFormatInfo" /> 的 <see cref="P:System.Globalization.NumberFormatInfo.NumberGroupSeparator" /> 和 <see cref="P:System.Globalization.NumberFormatInfo.CurrencyGroupSeparator" /> 属性确定的，并且每组中的位数是由 <see cref="T:System.Globalization.NumberFormatInfo" /> 的 <see cref="P:System.Globalization.NumberFormatInfo.NumberGroupSizes" /> 和 <see cref="P:System.Globalization.NumberFormatInfo.CurrencyGroupSizes" /> 属性确定的。</summary>
+    [__DynamicallyInvokable]
+    AllowThousands = 0x40,
+    /// <summary>指示数字字符串可以具有结尾符号。有效的结尾符号字符是由 <see cref="T:System.Globalization.NumberFormatInfo" /> 的 <see cref="P:System.Globalization.NumberFormatInfo.PositiveSign" /> 和 <see cref="P:System.Globalization.NumberFormatInfo.NegativeSign" /> 属性确定的。</summary>
+    [__DynamicallyInvokable]
+    AllowTrailingSign = 8,
+    /// <summary>指示分析期间必须忽略结尾空白字符。有效的空白字符具有 Unicode 值 U+0009、U+000A、U+000B、U+000C、U+000D 和 U+0020。</summary>
+    [__DynamicallyInvokable]
+    AllowTrailingWhite = 2,
+    /// <summary>指示使用 AllowHexSpecifier 以外的所有样式。这是复合数字样式。</summary>
+    [__DynamicallyInvokable]
+    Any = 0x1ff,
+    /// <summary>指示使用 AllowExponent 和 AllowHexSpecifier 以外的所有样式。这是复合数字样式。</summary>
+    [__DynamicallyInvokable]
+    Currency = 0x17f,
+    /// <summary>指示使用 AllowLeadingWhite、AllowTrailingWhite、AllowLeadingSign、AllowDecimalPoint 和 AllowExponent 样式。这是复合数字样式。</summary>
+    [__DynamicallyInvokable]
+    Float = 0xa7,
+    /// <summary>指示使用 AllowLeadingWhite、AllowTrailingWhite 和 AllowHexSpecifier 样式。这是复合数字样式。</summary>
+    [__DynamicallyInvokable]
+    HexNumber = 0x203,
+    /// <summary>指示使用 AllowLeadingWhite、AllowTrailingWhite 和 AllowLeadingSign 样式。这是复合数字样式。</summary>
+    [__DynamicallyInvokable]
+    Integer = 7,
+    
+    /// <summary>指示使用 AllowLeadingWhite、AllowTrailingWhite、AllowLeadingSign、AllowTrailingSign、AllowDecimalPoint 和 AllowThousands 样式。这是复合数字样式。</summary>
+    [__DynamicallyInvokable]
+    Number = 0x6f
+}
+
+ 
+
+ 
+
+
+/// 表示 32 位有符号的整数。
+struct Int32 {
+	
+	/// 表示 Int32 的最大可能值。
+	const int maxValue = 0x7fffffff;
+	
+	/// 表示 Int32 的最小可能值。
+	const int minValue = -2147483648;
+	
+	int _value;
+	
+	override int getHashCode() {
+		return this;
+	}
+	
+	override string toString() {
+		#todo
+	}
+	
+	static as int(string value){
+		#todo
+	}
+	
+	string toString(string format){
+	
+	}
+	
+	/// 判断当前对象是否和指定的对象相等。
+	bool == (Int32 value) {
+		return Native.int32equals(_value, value);
+	}
+	
+	int +(int value) {
+		return Native.add(this, value);
+	}
+	
+	[implicit]
+	as short {
+		return Native.int32ToInt16(this);
+	}
+
+}
+
+struct Int16 {
+	
+	/// 表示 Int32 的最大可能值。
+	const short maxValue = 0x7fff;
+	
+	/// 表示 Int32 的最小可能值。
+	const short minValue = -32768;
+	
+	short _value;
+
+	override int getHashCode() {
+		return Native.bitOr(this as ushort, Native.shiftLeft(this, 0x10));
+	}
+	
+}

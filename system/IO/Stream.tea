@@ -1,0 +1,132 @@
+
+
+/// 表示一个字节流。用于批量读写指定的二进制数据。
+abstract class Stream : ICloseable {
+
+	#region EmptyStream
+
+	private class EmptyStream : Stream {
+
+		override long length { get {return 0;} set {} }
+
+		override long position { get {return 0;} set { } }
+
+		override long canSeek { get {return true;} }
+
+		override long canRead { get {return true;} }
+
+		override int read(byte[] buffer, Interval range) { return 0; }
+
+		override int read() { return -1; }
+
+		override bool canWrite { get {return true;} }
+
+		override bool write(byte[] buffer, Interval range) {return true;}
+
+		override bool write(byte value) {return true;}
+
+		override bool flush() {return true;}
+	}
+
+	/// 表示一个空流。不会读取和写入任何数据。
+	public final static Stream empty = new EmptyStream();
+
+	#endregion
+
+	#region 超时
+
+	/// 获取当前流的最长读取时间（单位为毫秒）。如果返回 -1 说明永不超时。
+	virtual int readTimeout { get { return -1; } }
+
+	/// 获取当前流的最长写入时间（单位为毫秒）。如果返回 -1 说明永不超时。
+	virtual int writeTimeout { get { return -1; } }
+
+	/// 判断当前流是否会出现超时。
+	bool canTimeout { get { return readTimeout >= 0 || writeTimeout >= 0; } }
+
+	#endregion
+
+	#region 位置
+
+	/// 获取或设置当前流的长度（单位为字节）。
+	abstract long length { get; set; }
+
+	/// 获取或设置当前流中的位置。
+	abstract long position { get; set; }
+
+	/// 判断当前流是否支持查找位置操作。
+	abstract bool canSeek { get; }
+
+	/// 移动当前流的位置。
+	/// @param offset 移动的偏移数（单位为字节）。
+	abstract long seek(long offset);
+
+	#endregion
+
+	#region 读取
+
+	/// 判断当前流是否支持读取操作。
+	abstract bool canRead { get; }
+
+	/// 批量读取当前流的数据，同时更新当前位置。 
+	/// @param buffer 用于存放读取到的数据的字节数组。
+	/// @param range 指示读取到的数据保存到 @buffer 中对应的位置。
+	/// @return 返回本次操作实际读取到的字节数。如果未读取到任何数据，则返回 0 。
+	abstract int read(byte[] buffer, Interval range);
+	
+	/// 批量读取当前流的数据，同时更新当前位置。 读取的数目根据 @buffer 的长度决定。
+	/// @param buffer 用于存放读取到的数据的字节数组。
+	/// @return 返回本次操作实际读取到的字节数。如果未读取到任何数据，则返回 0 。
+	int read(byte[] buffer) {
+		return read(buffer, 0 ~ buffer.length);
+	}
+
+	/// 读取当前流的数据，同时更新当前位置。 
+	/// @return 返回本次操作实际读取到的字符，如果未读取到任何数据，则返回 -1。 
+	virtual int read() {
+		byte[] buffer = new byte[1];
+		return read(buffer) == 0 ? -1 : buffer[0];
+	}
+
+	#endregion
+
+	#region 写入
+
+	/// 判断当前流是否支持写入操作。
+	abstract bool canWrite { get; }
+
+	/// 批量写入数据到当前流，同时更新当前位置。 
+	/// @param buffer 用于存放需要写入的数据的字节数组。
+	/// @param range 指示要写入的数据在 @buffer 中对应的位置。
+	/// @return 如果写入成功则返回 true，否则返回 false 。
+	abstract bool write(byte[] buffer, Interval range);
+	
+	/// 批量写入数据到当前流，同时更新当前位置。 
+	/// @param buffer 用于存放需要写入的数据的字节数组。
+	/// @return 如果写入成功则返回 true，否则返回 false 。
+	bool write(byte[] buffer) {
+		return write(buffer, 0 ~ buffer.length);
+	}
+
+	/// 写入数据到当前流，同时更新当前位置。 
+	/// @return 如果写入成功则返回 true，否则返回 false 。
+	virtual bool write(byte value) {
+		return write([value]);
+	}
+
+	#endregion
+
+	#endregion 其它
+
+	/// 刷新当前流的所有缓冲区并执行实际的写入操作。 
+	/// @return 如果刷新成功则返回 true，否则返回 false 。
+	abstract bool flush();
+
+	/// 关闭当前流并释放所有相关资源。
+	virtual void close() {
+
+	}
+
+	#endregion
+
+}

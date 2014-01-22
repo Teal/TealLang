@@ -1,0 +1,28 @@
+/************************************************
+ * Copyright (c) xuld.  All rights reserved.
+ ************************************************/
+
+
+/// 所有异常的最终基类。
+class Exception {
+
+	readonly string message = "Exception was thrown.";
+	
+	extern virtual string stackTrace { get; }
+	
+	extern virtual string source { get; }
+	
+	override string toString() {
+		return "${getType().name}: ${message}";
+	}
+	
+	void >(){
+		Trace.writeLine(toString());
+		Trace.indent++;
+		Trace.writeLine(source);
+		Trace.indent--;
+	}
+}
+
+
+

@@ -1,0 +1,70 @@
+﻿/************************************************
+ * Copyright (c) xuld.  All rights reserved.
+ ************************************************/
+
+/// 表示 8 位无符号的整数，即一个字节。
+struct Byte {
+	
+	/// 表示 Int32 的最大可能值。
+	const byte maxValue = 0xff;
+	
+	/// 表示 Int32 的最小可能值。
+	const byte minValue = 0;
+	
+	/// 获取当前对象的哈希值。
+	override int getHashCode() {
+		return this;
+	}
+	
+	string toString(string format){
+	
+	}
+	
+	/// 获取当前对象的等效字符串。
+	override string toString() {
+		#todo
+	}
+	
+	static as int(string value){
+		#todo
+	}
+	
+	@implicit(-2)
+	extern as long();
+	
+	@implicit(-1)
+	extern as int();
+	
+	@implicit(0)
+	extern as short();
+	
+	extern as ulong();
+	
+	extern as short();
+	
+	extern as uint();
+	
+	extern as byte();
+	
+	extern as bool();
+	
+	/// 判断当前对象是否和指定的对象相等。
+	extern bool == (byte value);
+	extern bool != (byte value);
+	
+	extern bool > (byte value);
+	extern bool < (byte value);
+	extern bool <= (byte value);
+	extern bool >= (byte value);
+	
+	extern int +(int value);
+	
+	extern int -(int value);
+	
+	extern int *(int value);
+	
+	extern int /(int value);
+	
+	extern int ^(int value);
+}
+

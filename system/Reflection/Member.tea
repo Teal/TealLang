@@ -1,0 +1,29 @@
+
+// 表示一个成员。用于获取有关成员属性的信息并提供对成员元数据的访问。 
+abstract class Member {
+
+	/// 获取当前成员的名称。
+	abstract string name { get; }
+
+	/// 获取包含该成员的父类。
+	abstract Type parenrtMember { get; }
+
+	/// 获取包含该成员的父类。
+	virtual Type parenrtType { get { return parenrtMember as Type;} }
+
+	bool ==(Member other) {
+		return this as object == &other as object;
+	}
+
+	/// 获取当前成员的所有注解。
+	abstract object[] getAnnotations();
+
+	/// 获取当前成员的指定类型的所有注解。
+	abstract object[] getAnnotations(Type annotationType);
+
+	/// 获取当前成员的指定类型的第一个注解。
+	abstract object getAnnotation(Type annotationType);
+
+	/// 判断当前成员是否拥有指定类型的注解。
+	abstract bool hasAnnotation(Type annotationType);
+}
