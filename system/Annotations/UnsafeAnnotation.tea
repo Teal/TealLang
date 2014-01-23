@@ -4,16 +4,7 @@
 
 
 
-struct Interval {
-
-	int start;
-
-	int end;
-
-	int length {
-		get {
-			return end - start;
-		}
-	}
-
+/// 标记一个成员包含不安全的代码。
+class UnsafeAnnotation : Annotation {
+	
 }

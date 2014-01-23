@@ -1,0 +1,31 @@
+
+@flags
+enum AnnotationTarget {
+	
+	$class,
+	$struct,
+	$enum,
+	$interface,
+	$namespace,
+
+	constructor,
+	operator,
+	method,
+	property,
+	field,
+
+	data = field ^| property,
+	func = constructor ^| operator ^| method,
+	type = $class ^| $struct ^| $enum ^| $interface ^| $namespace,
+	member = data ^| func,
+	all = type ^| member,
+
+}
+
+
+@annotationTarget(AnnotationTarget.$class)
+class AnnotationTargetAnnotation : Annotation {
+
+	AnnotationTarget target;
+
+}

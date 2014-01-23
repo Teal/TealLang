@@ -11,7 +11,7 @@ class Object {
 	/// 创建当前对象的浅表副本。
 	protected object memberwiseClone() {
 		Ptr newObj = Allocator.alloc(_type);
-		StdLib.memcpy(((this as Ptr as int) + Ptr.size) as Ptr, this as Ptr, _type.size);
+		StdLib.memcpy(((this as Ptr as int) + typeof(object).size) as Ptr, this as Ptr, _type.size);
 		return newObj as object;
 	}
 

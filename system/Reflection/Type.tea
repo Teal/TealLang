@@ -3,9 +3,17 @@
 // @remark 类型包括：类类型、接口类型、数组类型、值类型、枚举类型、类型参数、泛型类型定义，以及开放或封闭构造的泛型参数类型。 
 abstract class Type : Member {
 
-	/// 根据指定的类型序号载入新的类型对象。
-	static Type fromTypeId(int typeId) {
-		return typeId as Ptr<Type> as Type;
+	string _name;
+
+	override string name {
+		get {
+			return _name;
+		}
 	}
+
+	///// 根据指定的类型序号载入新的类型对象。
+	//static Type fromTypeId(int typeId) {
+	//	return typeId as Ptr<Type> as Type;
+	//}
 
 }

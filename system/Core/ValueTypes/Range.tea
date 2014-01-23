@@ -1,0 +1,27 @@
+/************************************************
+ * Copyright (c) xuld.  All rights reserved.
+ ************************************************/
+
+/// 表示一个区间。
+struct Range : IEnumerable<int> {
+
+	/// 获取当前区间的起始值。
+	int start;
+
+	/// 获取当前区间的终止值。
+	int end;
+
+	/// 获取当前区间的长度。
+	int length {
+		get {
+			return end - start;
+		}
+	}
+
+	IEnumerator<int> IEnumerable<int>.getEnumerator(){
+		for(int current = start to end){
+			yield current;
+		}
+	}
+
+}

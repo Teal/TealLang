@@ -11,13 +11,21 @@ final class String : IComparable<string>, IClonable<string>, IEnumerable<char> {
 	/// 获取当前字符串的等效 char 指针。
 	Ptr<char> data {
 		get {
-			return ((this as Ptr as int) + (Ptr.size + 4)) as Ptr<char>;
+			return ((this as Ptr as int) + typeof(String).size) as Ptr<char>;
 		}
 	}
 
 	char [int index] { 
 		get{
 			return data[index];
+		}
+	}
+
+	string [Range range] {
+		get {
+			string newString = new String(range.length);
+			Stdlib.wstrncpy(newString.data, data + range.start, range.length);
+			return newString;
 		}
 	}
 	
@@ -42,6 +50,7 @@ final class String : IComparable<string>, IClonable<string>, IEnumerable<char> {
 
 	/// 将指定的数组转为等效的字符串。
 	/// 该方法直接将数组内存和字符串共享。
+	@unsafe
 	static string staticCast(char[] buffer) {
 		Ptr bufferPtr = buffer as Ptr;
 		bufferPtr[0] = typeof(string);
