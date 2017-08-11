@@ -1,0 +1,9 @@
+class Number {
+
+    ::min: Number;
+
+    ::max: Number;
+
+    abs := this < 0 ? -this : this;
+
+}

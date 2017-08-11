@@ -1,0 +1,11 @@
+/// 表示一个文件。
+class File {
+
+    /// 获取文件内容。
+    content: class FileContent : String {
+        
+        loaded: Boolean;
+
+    }
+
+}

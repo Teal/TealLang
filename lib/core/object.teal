@@ -1,0 +1,23 @@
+/// 表示一个对象。
+class Object {
+    
+    /// 获取当前定义的名称。
+    ::name: String;
+
+    /// 获取当前定义所在的位置。
+    ::location: Location;
+
+    /// 获取当前定义的类型。
+    ::type: Type;
+
+    /// 判断当前对象是否是某个类型。
+    ::is(type: Type) {
+
+    }
+
+    /// 将当前对象转为指定的类型。
+    ::as(type: Type) {
+
+    }
+
+}

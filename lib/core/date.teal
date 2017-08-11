@@ -1,0 +1,4 @@
+/// 表示一个日期。
+class Date: String {
+    
+}

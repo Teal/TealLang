@@ -1,0 +1,13 @@
+/// 表示一个颜色。
+class Color: String {
+
+    /// R 值。
+    r: Integer & {min: 0, max: 255};
+
+    /// G 值。
+    g: Integer & {min: 0, max: 255};
+
+    /// B 值。
+    b: Integer & {min: 0, max: 255};
+
+}

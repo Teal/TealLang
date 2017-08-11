@@ -1,0 +1,13 @@
+/// 表示一个位置。
+class Location {
+
+    /// 所在路径。
+    path: Path;
+    
+    /// 行号(从 0 开始)。
+    line: Integer;
+
+    /// 列号(从 0 开始)。
+    column: Integer;
+
+}

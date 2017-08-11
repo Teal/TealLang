@@ -1,0 +1,4 @@
+/// 表示一个整数。
+class Integer: Number {
+
+}

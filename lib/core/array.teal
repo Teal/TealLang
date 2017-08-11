@@ -1,0 +1,7 @@
+/// 表示一个数组。
+class Array<T> {
+
+    /// 数组的长度。
+    length: Integer;
+    
+}
