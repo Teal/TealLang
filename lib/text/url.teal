@@ -1,0 +1,38 @@
+/// 表示一个地址。
+class Url: String {
+
+    /// 协议部分。如 "http:"。
+    protocol: string;
+
+    /// 主机部分。如 "localhost:80"。
+    host: String;
+
+    /// 端口部分。如 "80"。
+    port: String;
+
+    /// 主机名部分。如 "localhost"。
+    hostname: String;
+
+    /// 哈希值部分。如 "#hash"。
+    hash: String;
+
+    /// 查询参数部分。如 "?q=1"。
+    search: String;
+
+    /// 查询参数部分。如 {q: 1}。
+    query: Map<String, String>;
+
+    /// 路径名部分。如 "/foo/a.html?q=1"。
+    pathname: String;
+
+    /// 路径部分。如 "/foo/a.html"。
+    path: String;
+
+    /// 完整地址。如 "http://localhost:80/foo/a.html?q=1"。
+    href: String;
+
+    Url(value: String) {
+
+    }
+
+}

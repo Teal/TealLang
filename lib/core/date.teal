@@ -1,4 +1,15 @@
 /// 表示一个日期。
-class Date: String {
+class Date {
     
+    Date(value: String) {
+
+    }
+
+    Date(year: Integer, month = 1, day = 1, hours = 0, minutes = 0, seconds = 0, millionSeconds = 0) {
+        
+    }
+
+    /// 年部分。
+    year;
+
 }
