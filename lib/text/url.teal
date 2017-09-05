@@ -2,7 +2,7 @@
 class Url: String {
 
     /// 协议部分。如 "http:"。
-    protocol: string;
+    protocol: String;
 
     /// 主机部分。如 "localhost:80"。
     host: String;
