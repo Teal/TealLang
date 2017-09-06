@@ -40,7 +40,9 @@ class String {
                 ..start = start
                 ..end = end);
 
-        toLower = String(data.map(char { char.toLower() })
+        toLower = String(data.each(char { 
+            return char.toLower();
+        });
 
         toCharArray() = this;
 

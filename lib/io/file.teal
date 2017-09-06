@@ -2,9 +2,27 @@
 class File {
 
     /// 获取文件内容。
-    content: class FileContent : String {
-        
-        loaded: Boolean;
+    content = String()
+        .._impl = FileContent()
+            ..source = this;
+
+    class FileContent {
+
+        source: File;
+
+        [index] = data[index];
+
+        [start, end] = String()
+            .._impl = (SubString()
+                ..source = this
+                ..start = start
+                ..end = end);
+
+        toLower = String(data.each(char { 
+            return char.toLower();
+        });
+
+        toCharArray() = this;
 
     }
 

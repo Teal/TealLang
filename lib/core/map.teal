@@ -1,8 +1,8 @@
 /// 表示一个哈希表。
-class Map<T, K> {
+class Map<T, R> {
 
     /// 哈希表的长度。
-    length: Integer;
+    length: UInt;
 
     /// 检索指定键对应的值。
     [key: T]: R {

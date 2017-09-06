@@ -1,0 +1,4 @@
+/// 表示一个二进制缓存。
+class Buffer : List<Byte> {
+
+}

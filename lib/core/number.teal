@@ -4,6 +4,6 @@ class Number {
 
     ::max: Number;
 
-    abs := this < 0 ? -this : this;
+    abs = this < 0 ? -this : this;
 
 }
