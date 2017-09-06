@@ -1,3 +1,5 @@
+js = import("../external/js");
+
 /// 计算所有值的最大值。
 max(...values) {
 
@@ -7,3 +9,6 @@ max(...values) {
 min(...values) {
     
 }
+
+/// 计算一个值的正弦值。
+sin(value: Number) = js.Math.sin(value);

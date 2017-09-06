@@ -1,0 +1,16 @@
+
+write(message: String) {
+
+}
+
+read() {
+
+}
+
+readKey() {
+
+}
+
+readLine() {
+    
+}

@@ -1,5 +1,9 @@
+js = import("js");
+
 /// 表示一个日期。
 class Date {
+
+    _jsDate: js.Date;
     
     Date(value: String) {
 
@@ -10,6 +14,12 @@ class Date {
     }
 
     /// 年部分。
-    year;
+    year = _jsDate.getFullYear();
+    year(value) {
+        _jsDate.setFullYear(value);
+    }
+
+    /// 年部分。
+    month = _jsDate.getMonth() + 1;
 
 }

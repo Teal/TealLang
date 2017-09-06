@@ -2,6 +2,59 @@
 class Array<T> {
 
     /// 数组的长度。
-    length: Integer;
+    length: UInt;
+
+    /// 获取数组的指定项。
+    [index: UInt] {
+
+    }
+
+    /// 设置数组的指定项。
+    [index: UInt](value: T) {
+
+    }
+
+    /// 获取指定区间的项。
+    [start: UInt = 0, end: UInt = length] {
+
+    }
+
+    /// 设置指定区间的项。
+    [start: UInt = 0, end: UInt = length](value: T) {
+
+    }
+
+    /// 向数组末尾添加项。
+    add(...items: T[]) {
+
+    }
+    
+    /// 向数组指定位置添加项。
+    addAt(index: UInt, ...items: T[]) {
+
+    }
+
+    /// 移除数组的指定项。
+    remove(...items: T[]) {
+
+    }
+    
+    /// 移除数组的指定位置。
+    removeAt(start: UInt, end: UInt = start + 1) {
+
+    }
+
+    /// 数组特性。
+    features: enum Feature {
+
+        /// 小数组。
+        small,
+
+        willAdd,
+
+        /// 
+        willRemoveAny
+
+    }[]
     
 }

@@ -1,4 +1,88 @@
 /// 表示一个字符串。
 class String {
-    
+
+    /// 获取字符串的长度。
+    length: UInt() = _impl.length;
+
+    /// 获取指定位置的字符。
+    [index: UInt] = _impl[index];
+
+    /// 获取指定区间的子字符串。
+    [start: UInt = 0, end: UInt = length] = _impl[start, end];
+
+    /// 连接两个子字符串。
+    + (other: String) = String()
+        .._impl = (Concation()
+            ..source1 = this
+            ..source2 = other);
+
+    /// 获取当前字符串的全小写内容。
+    toLower = _impl.toLower();
+
+    /// 创建新的字符串。
+    String(chars: Char[]) { _impl = CharArray()..data = chars }
+
+    /// 具体实现字符串数据存储的结构。
+    _impl: CharArray | Substring | Concation;
+
+    /// 以字符数组结构存储的字符串。
+    class CharArray {
+
+        data: Char[];
+
+        length = data.length;
+
+        [index] = data[index];
+
+        [start, end] = String()
+            .._impl = (SubString()
+                ..source = this
+                ..start = start
+                ..end = end);
+
+        toLower = String(data.each(char { 
+            return char.toLower();
+        });
+
+        toCharArray() = this;
+
+    }
+
+    /// 以子字符串结构存储的字符串。
+    class Substring {
+
+        source: String;
+
+        start: UInt;
+
+        end: UInt;
+
+        length = end - start;
+
+        [index] = start + index < end ? source[start + index] : "";
+
+        [start, end] = String()
+            .._impl = (SubString()
+                ..source = source
+                ..start = this.start + start
+                ..end = this.end - end);
+
+    }
+
+    /// 以拼接字符串结构存储的字符串。
+    class Concation {
+
+        source1: String;
+
+        source2: String;
+
+        length = source1.length + source2.length;
+
+        + (other) = String()
+            .._impl = (Concation()
+                ..source1 = this
+                ..source2 = other);
+
+    }
+
 }
