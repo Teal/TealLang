@@ -1,91 +1,298 @@
-import * as operation from "./operation";
-import * as type from "./type";
-
 /**
- * 表示一个函数主体。
+ * 表示一个程序。
  */
-export class FunctionBody {
+export class Program {
 
-
+    /**
+     * 所有模块。
+     */
+    modules: Module[] = [];
 
 }
 
 /**
- * 表示一个执行分支。
+ * 表示一个模块。
  */
-export class Branch {
+export class Module {
 
     /**
-     * 父分支。
+     * 所在程序。
      */
-    parent?: Branch;
+    parent: Program;
 
     /**
-     * 当前分支开始执行的第一个操作符索引
+     * 源文件名。
      */
-    start = 0;
+    fileName: string;
 
     /**
-     * 当前分支开始执行的最后一个操作符索引
+     * 所有成员。
      */
-    end: number;
+    members: Member[] = [];
 
     /**
-     * 当前分支定义的变量。
+     * 获取指定名称的成员。
+     * @param name 成员名称。
      */
-    variables: Variable[];
-
-    /**
-     * 当前分支返回的类型。
-     */
-    return: type.Type;
-
-    /**
-     * 当前分支产生的错误。
-     */
-    errors: string[];
-
-    /**
-     * 报告当前分支的错误。
-     * @param message 错误信息。
-     * @param args 错误参数列表。
-     */
-    error(message: string, ...args: any[]) {
-
+    getMember(name: string) {
+        return this.members.find(member => member.name === name);
     }
 
     /**
-     * 判断当前分支是否包含指定的操作码索引。
-     * @param index 要判断的操作码索引。
-     * @return 如果包含则返回 true，否则返回 false。
+     * 获取指定名称的所有成员。
+     * @param name 成员名称。
      */
-    contains(index: number) {
-        if (index >= this.start && index <= this.end) {
-            return true;
+    getMembers(name: string) {
+        return this.members.filter(member => member.name === name);
+    }
+
+}
+
+/**
+ * 表示一个成员。
+ */
+export abstract class Member {
+
+    /**
+     * 所在模块或类。
+     */
+    parent: Module | Class;
+
+    /**
+     * 获取所在模块。
+     */
+    get module() {
+        let p = this.parent;
+        while (!(p instanceof Module)) {
+            p = this.parent;
         }
-        if (this.parent) {
-            return this.parent.contains(index);
+        return p;
+    }
+
+    /**
+     * 成员名。
+     */
+    name: string;
+
+    /**
+     * 所有类型参数。
+     */
+    typeParameters: TypeParameter[] = [];
+
+}
+
+/**
+ * 表示一个类。
+ */
+export class Class extends Member {
+
+    /**
+     * 基类。
+     */
+    bases: Class[] = [];
+
+    /**
+     * 所有成员。
+     */
+    members: Member[] = [];
+
+    /**
+     * 获取指定名称的成员。
+     * @param name 成员名称。
+     */
+    getMember(name: string) {
+        const member = this.members.find(member => member.name === name);
+        if (member) {
+            return member;
         }
-        return false;
+        for (const base of this.bases) {
+            const member = base.getMember(name);
+            if (member) {
+                return member;
+            }
+        }
     }
 
     /**
-     * 获取当前分支变量的值。
-     * @param name 要获取的变量名。
-     * @return 返回变量的类型。如果变量是一个引用则自动计算。如果变量不存在则返回 null。
+     * 获取指定名称的所有成员。
+     * @param name 成员名称。
      */
-    get(name: string) {
-
+    getMembers(name: string) {
+        const members = this.members.filter(member => member.name === name);
+        for (const base of this.bases) {
+            members.push(...base.getMembers(name));
+        }
+        return members;
     }
+
+}
+
+/**
+ * 表示一个方法。
+ */
+export class Method extends Member {
 
     /**
-     * 设置当前分支变量的值。
-     * @param name 要设置的变量名。 
-     * @param value 要设置的变量值。
+     * 所有参数。
      */
-    set(name: string, value: Type) {
+    parameters: Parameter[] = [];
 
-    }
+    /**
+     * 所有中间指令码。
+     */
+    body: ILCode[] = [];
+
+}
+
+/**
+ * 表示一个参数。
+ */
+export class Parameter {
+
+    /**
+     * 参数名。
+     */
+    name: string;
+
+}
+
+/**
+ * 表示一个类型参数。
+ */
+export class TypeParameter {
+
+    /**
+     * 参数名。
+     */
+    name: string;
+
+}
+
+/**
+ * 表示一个中间指令码。
+ */
+export abstract class ILCode {
+
+    /**
+     * 返回值变量名。
+     */
+    result: string;
+
+}
+
+/**
+ * 表示一个常量定义指令码（%1 = 1）。
+ */
+export class ConstantILCode extends ILCode {
+
+    /**
+     * 定义的常量值。
+     */
+    value: number | string | boolean | null;
+
+}
+
+/**
+ * 表示一个单目指令码（%1 = +%2）。
+ */
+export class UnaryILCode extends ILCode {
+
+    /**
+     * 运算符。
+     */
+    operator: "+" | "-" | "!";
+
+    /**
+     * 运算数变量名。
+     */
+    operand: "";
+
+}
+
+/**
+ * 表示一个双目指令码（%1 = %2 + %3）。
+ */
+export class BinaryILCode extends ILCode {
+
+    /**
+     * 左运算数变量名。
+     */
+    leftOperand: "";
+
+    /**
+     * 运算符。
+     */
+    operator: "+" | "-" | "*" | "/" | "%";
+
+    /**
+     * 右运算数变量名。
+     */
+    rightOperand: "";
+
+}
+
+/**
+ * 表示一个跳转指令码（goto #1）。
+ */
+export class GotoILCode extends ILCode {
+
+    /**
+     * 跳转的目标指令码码索引。
+     */
+    target: number;
+
+}
+
+/**
+ * 表示一个判断跳转指令码（if %1 goto #1）。
+ */
+export class GotoIfILCode extends GotoILCode {
+
+    /**
+     * 判断的变量名。
+     */
+    condition: string;
+
+}
+
+/**
+ * 表示一个函数调用指令码（call %1(...)）。
+ */
+export class CallILCode extends ILCode {
+
+    /**
+     * 调用的目标变量。
+     */
+    target: string;
+
+    /**
+     * 参数变量名。
+     */
+    arguments: string[];
+
+}
+
+/**
+ * 表示一个成员引用指令码（%1 = %1.foo）。
+ */
+export class MemberILCode extends ILCode {
+
+    /**
+     * 调用的目标成员。
+     */
+    target: string;
+
+}
+
+/**
+ * 表示一个索引指令码（%1 = %1[%2]）。
+ */
+export class IndexerILCode extends ILCode {
+
+    /**
+     * 调用的目标变量名。
+     */
+    target: string;
 
 }
 
@@ -100,65 +307,42 @@ export class Variable {
     name: string;
 
     /**
-     * 变量类型。
+     * 变量值。
      */
-    type: type.Type;
+    value: Value;
 
 }
-
-export class ResolveContext {
-
-}
-
-//
-// a = 1
-// a = a + 1
-// if a > 2 goto #61
-// goto #58
 
 /**
- * 解析指定的字节码。
- * @param operations 要解析的操作列表。
- * @param branch 初始的分支。
- * @return 返回执行结束的所有分支。
+ * 值。
  */
-export function resolve(operations: operation.Operation[], branch: Branch) {
-    const result: Branch[] = [];
-    for (let i = branch.start; i < operations.length; i++) {
-        const op = operations[i];
-        switch (op.constructor) {
-            case operation.ConstantOperation:
-                branch.set(op.result, type.createTypeFromConstant((op as operation.ConstantOperation).value));
-                break;
-            case operation.UnaryOperation:
-                const operand = branch.get((op as operation.UnaryOperation).operand);
-                if (!operand) {
-                    branch.error("Variable {0} is not defined in current branch.", (op as operation.UnaryOperation).operand);
-                } else {
-                    // TODO: 将 operand 引用转为类型。
-                    switch ((op as operation.UnaryOperation).operator) {
-                        case "+":
-                            branch.set(op.result, operand.positive());
-                            break;
-                        case "-":
-                            branch.set(op.result, operand.negative());
-                            break;
-                    }
-                }
-                break;
-            case operation.GotoOperation:
-                branch.end = i;
+export class Value {
 
-                // 如果当前分支已包含目标字节码，则重新执行会导致死循环。
-                if (!branch.contains((op as operation.GotoOperation).target)) {
-                    const childBranch = new Branch();
-                    childBranch.parent = branch;
-                    childBranch.start = (op as operation.GotoOperation).target;
-                    result.push(...resolve(operations, childBranch));
-                }
-                return result;
-        }
-    }
-    result.push(branch);
-    return result;
+    /**
+     * 值的类型。
+     */
+    type: Type;
+
+    /**
+     * 是否常量。
+     */
+    const: boolean;
+
+    /**
+     * 是否外部。
+     */
+    external: boolean;
+
+    /**
+     * 属性。
+     */
+    properties: Variable[];
+
+}
+
+/**
+ * 表示一个类型。
+ */
+export class Type {
+
 }
