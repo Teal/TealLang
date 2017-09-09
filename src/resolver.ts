@@ -20,7 +20,7 @@ class Program {
     /**
      * 对整个程序执行语义分析。
      */
-    resolve(){
+    resolve() {
 
     }
 
@@ -62,6 +62,19 @@ class Module {
         return this.members.filter(member => member.name === name);
     }
 
+    /**
+     * 获取指定名称指代的成员。
+     * @param name 成员名称。
+     */
+    resolveMember(name: string) {
+        // 在当前模块范围内无法找到指定的模块。
+        const member = this.getMembers(name);
+        if (member.length) {
+            return member;
+        }
+        // 尝试扫描项目内所有源码。
+    }
+
 }
 
 /**
@@ -94,6 +107,29 @@ abstract class Member {
      * 所有类型参数。
      */
     typeParameters: TypeParameter[] = [];
+
+    /**
+     * 当前成员被获取的次数。
+     */
+    getCount = 0;
+
+    /**
+     * 当前成员被设置的次数。
+     */
+    setCount = 0;
+
+    /**
+     * 解析当前成员。
+     */
+    abstract resolve();
+
+    /**
+     * 获取指定名称指代的成员。
+     * @param name 成员名称。
+     */
+    resolveMember(name: string) {
+        return this.parent.resolveMember(name);
+    }
 
 }
 
@@ -141,6 +177,21 @@ class Class extends Member {
         return members;
     }
 
+    resolve() {
+
+    }
+
+}
+
+/**
+ * 表示一个字段。
+ */
+class Field extends Member {
+
+    resolve() {
+
+    }
+
 }
 
 /**
@@ -165,6 +216,29 @@ class Method extends Member {
         return convertToILCodes(this.declaration, this.declaration.body);
     }
 
+    resolve() {
+        this.getCount++;
+
+
+    }
+
+    /**
+     * 判断当前函数是否有副作用。
+     */
+    hasSideEffects: boolean;
+
+    /**
+     * 当前函数内被获取过的成员。
+     */
+    getted: Member[];
+
+    /**
+     * 当前函数内被设置过的成员。
+     */
+    setted: Member[];
+
+
+
 }
 
 /**
@@ -188,12 +262,5 @@ class TypeParameter {
      * 参数名。
      */
     name: string;
-
-}
-
-/**
- * 表示一个类型。
- */
-class Type {
 
 }

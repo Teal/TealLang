@@ -1,3 +1,6 @@
+/**
+ * @file 中间指令码
+ */
 
 /**
  * 表示一个中间指令码。
@@ -12,7 +15,7 @@ abstract class ILCode {
 }
 
 /**
- * 表示一个常量定义指令码（%1 = 1）。
+ * 表示一个常量定义指令码（`%1 = 1`）。
  */
 class ConstantILCode extends ILCode {
 
@@ -24,46 +27,46 @@ class ConstantILCode extends ILCode {
 }
 
 /**
- * 表示一个单目指令码（%1 = +%2）。
+ * 表示一个单目指令码（`%1 = +%2`）。
  */
 class UnaryILCode extends ILCode {
 
     /**
      * 运算符。
      */
-    operator: "+" | "-" | "!";
+    operator: TokenType;
 
     /**
      * 运算数变量名。
      */
-    operand: "";
+    operand: string;
 
 }
 
 /**
- * 表示一个双目指令码（%1 = %2 + %3）。
+ * 表示一个双目指令码（`%1 = %2 + %3`）。
  */
 class BinaryILCode extends ILCode {
 
     /**
      * 左运算数变量名。
      */
-    leftOperand: "";
+    leftOperand: string;
 
     /**
      * 运算符。
      */
-    operator: "+" | "-" | "*" | "/" | "%";
+    operator: TokenType;
 
     /**
      * 右运算数变量名。
      */
-    rightOperand: "";
+    rightOperand: string;
 
 }
 
 /**
- * 表示一个跳转指令码（goto #1）。
+ * 表示一个跳转指令码（`goto #1`）。
  */
 class GotoILCode extends ILCode {
 
@@ -75,7 +78,7 @@ class GotoILCode extends ILCode {
 }
 
 /**
- * 表示一个判断跳转指令码（if %1 goto #1）。
+ * 表示一个判断跳转指令码（`if %1 goto #1`）。
  */
 class GotoIfILCode extends GotoILCode {
 
@@ -87,12 +90,12 @@ class GotoIfILCode extends GotoILCode {
 }
 
 /**
- * 表示一个函数调用指令码（call %1(...)）。
+ * 表示一个函数调用指令码（`%1 = %2(...)`）。
  */
 class CallILCode extends ILCode {
 
     /**
-     * 调用的目标变量。
+     * 调用的目标。
      */
     target: string;
 
@@ -104,19 +107,24 @@ class CallILCode extends ILCode {
 }
 
 /**
- * 表示一个成员引用指令码（%1 = %1.foo）。
+ * 表示一个成员引用指令码（`%1 = %2.foo`）。
  */
 class MemberILCode extends ILCode {
 
     /**
-     * 调用的目标成员。
+     * 调用的目标。
      */
     target: string;
+
+    /**
+     * 调用的参数。
+     */
+    argument: string;
 
 }
 
 /**
- * 表示一个索引指令码（%1 = %1[%2]）。
+ * 表示一个索引指令码（`%1 = %2[%3]`）。
  */
 class IndexerILCode extends ILCode {
 
@@ -127,50 +135,6 @@ class IndexerILCode extends ILCode {
 
 }
 
-/**
- * 表示一个变量。
- */
-class Variable {
-
-    /**
-     * 变量名。
-     */
-    name: string;
-
-    /**
-     * 变量值。
-     */
-    value: Value;
-
-}
-
-/**
- * 值。
- */
-class Value {
-
-    /**
-     * 值的类型。
-     */
-    type: Type;
-
-    /**
-     * 是否常量。
-     */
-    const: boolean;
-
-    /**
-     * 是否外部。
-     */
-    external: boolean;
-
-    /**
-     * 属性。
-     */
-    properties: Variable[];
-
-}
-
-function convertToILCodes(context: Node, statements: Statement) : ILCode[] {
+function convertToILCodes(context: Node, statements: Statement): ILCode[] {
 
 }
