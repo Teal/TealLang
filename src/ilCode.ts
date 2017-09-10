@@ -8,60 +8,116 @@
 abstract class ILCode {
 
     /**
-     * 返回值变量名。
+     * 当前字节码的原始节点。
      */
-    result: string;
+    node: Node;
 
 }
 
 /**
- * 表示一个常量定义指令码（`%1 = 1`）。
+ * 表示一个空指定码。
  */
-class ConstantILCode extends ILCode {
+class EmptyILCode extends ILCode { }
+
+/**
+ * 表示一个复制指定码（`%2 = %1`）。
+ */
+class DuplicateILCode extends ILCode { }
+
+/**
+ * 表示一个载入 true 指令码（`%1 = true`）。
+ */
+class LoadTrueILCode extends ILCode { }
+
+/**
+ * 表示一个载入 false 指令码（`%1 = false`）。
+ */
+class LoadFalseILCode extends ILCode { }
+
+/**
+ * 表示一个载入 null 指令码（`%1 = null`）。
+ */
+class LoadNullILCode extends ILCode { }
+
+/**
+ * 表示一个载入数值指令码（`%1 = 1`）。
+ */
+class LoadNumberILCode extends ILCode {
 
     /**
      * 定义的常量值。
      */
-    value: number | string | boolean | null;
+    value: number;
 
 }
 
 /**
- * 表示一个单目指令码（`%1 = +%2`）。
+ * 表示一个载入字符串指令码（`%1 = "foo"`）。
  */
-class UnaryILCode extends ILCode {
+class LoadStringILCode extends ILCode {
 
     /**
-     * 运算符。
+     * 定义的常量值。
      */
-    operator: TokenType;
-
-    /**
-     * 运算数变量名。
-     */
-    operand: string;
+    value: string;
 
 }
 
 /**
- * 表示一个双目指令码（`%1 = %2 + %3`）。
+ * 表示一个载入单位指令码（`%1 = 10px`）。
  */
-class BinaryILCode extends ILCode {
+class LoadUnitILCode extends ILCode {
 
     /**
-     * 左运算数变量名。
+     * 定义的常量值。
      */
-    leftOperand: string;
+    value: number;
 
     /**
-     * 运算符。
+     * 定义的单位。
      */
-    operator: TokenType;
+    unit: string;
+
+}
+
+/**
+ * 表示一个载入标识符指令码（`%1 = abc`）。
+ */
+class LoadIdentifierILCode extends ILCode {
 
     /**
-     * 右运算数变量名。
+     * 变量名。
      */
-    rightOperand: string;
+    name: string;
+
+}
+
+/**
+ * 表示一个载入成员指令码（`%1 = %2.foo`）。
+ */
+class LoadMemberILCode extends ILCode {
+
+    /**
+     * 调用的目标。
+     */
+    target: string;
+
+    /**
+     * 调用的成员名。
+     */
+    name: string;
+
+}
+
+/**
+ * 表示一个存储指令码（`%1 = %2`）。
+ */
+class SaveILCode extends ILCode {
+
+    /**
+     * 变量名。
+     */
+    name: string;
 
 }
 
@@ -71,7 +127,7 @@ class BinaryILCode extends ILCode {
 class GotoILCode extends ILCode {
 
     /**
-     * 跳转的目标指令码码索引。
+     * 跳转的目标指令码索引。
      */
     target: number;
 
@@ -80,14 +136,7 @@ class GotoILCode extends ILCode {
 /**
  * 表示一个判断跳转指令码（`if %1 goto #1`）。
  */
-class GotoIfILCode extends GotoILCode {
-
-    /**
-     * 判断的变量名。
-     */
-    condition: string;
-
-}
+class GotoIfILCode extends GotoILCode { }
 
 /**
  * 表示一个函数调用指令码（`%1 = %2(...)`）。
@@ -95,45 +144,53 @@ class GotoIfILCode extends GotoILCode {
 class CallILCode extends ILCode {
 
     /**
-     * 调用的目标。
-     */
-    target: string;
-
-    /**
      * 参数变量名。
      */
-    arguments: string[];
+    argumentCount: number;
 
 }
 
 /**
- * 表示一个成员引用指令码（`%1 = %2.foo`）。
- */
-class MemberILCode extends ILCode {
-
-    /**
-     * 调用的目标。
-     */
-    target: string;
-
-    /**
-     * 调用的参数。
-     */
-    argument: string;
-
-}
-
-/**
- * 表示一个索引指令码（`%1 = %2[%3]`）。
+ * 表示一个索引指令码（`%1 = %2[...]`）。
  */
 class IndexerILCode extends ILCode {
 
     /**
-     * 调用的目标变量名。
+     * 参数变量名。
      */
-    target: string;
+    argumentCount: number;
 
 }
+
+/**
+ * 表示一个返回指令码（`return %1`）。
+ */
+class ReturnILCode extends ILCode { }
+
+/**
+ * 表示一个正运算指令码（`%1 = +%2`）。
+ */
+class AddUnaryILCode extends ILCode { }
+
+/**
+ * 表示一个负运算指令码（`%1 = -%2`）。
+ */
+class SubUnaryILCode extends ILCode { }
+
+/**
+ * 表示一个非运算指令码（`%1 = !%2`）。
+ */
+class NotUnaryILCode extends ILCode { }
+
+/**
+ * 表示一个加运算双目指令码（`%1 = %2 + %3`）。
+ */
+class AddBinaryILCode extends ILCode { }
+
+/**
+ * 表示一个减运算双目指令码（`%1 = %2 - %3`）。
+ */
+class SubBinaryILCode extends ILCode { }
 
 function convertToILCodes(context: Node, statements: Statement): ILCode[] {
 

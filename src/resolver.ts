@@ -98,6 +98,16 @@ abstract class Member {
         return p;
     }
 
+    /** 
+     * 获取所在程序。
+     */
+    get program() { return this.module.parent; }
+
+    /** 
+     * 获取所使用的编译器。
+     */
+    get compiler() { return this.program.compiler; }
+
     /**
      * 成员名。
      */
@@ -127,7 +137,7 @@ abstract class Member {
      * 获取指定名称指代的成员。
      * @param name 成员名称。
      */
-    resolveMember(name: string) {
+    findMembers(name: string) {
         return this.parent.resolveMember(name);
     }
 
@@ -237,7 +247,10 @@ class Method extends Member {
      */
     setted: Member[];
 
-
+    /**
+     * 当前函数执行完成后的分支情况。
+     */
+    @cache get branches() { return invokeMethod(this, []); }
 
 }
 
