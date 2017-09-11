@@ -122,7 +122,7 @@ export class ResolveContext {
  * @param branch 初始的分支。
  * @return 返回执行结束的所有分支。
  */
-export function resolve(operations: operation.Operation[], branch: Branch) {
+export function resolve(operations: operation.ILCode[], branch: Branch) {
     const result: Branch[] = [];
     for (let i = branch.start; i < operations.length; i++) {
         const op = operations[i];

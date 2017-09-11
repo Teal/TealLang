@@ -13,7 +13,7 @@ import {intern} from '../compiler/compiler';
 /**
  * 表示一个语法树节点。
  */
-export abstract class Node implements TextRange {
+abstract class Node implements TextRange {
 
     /**
      * 获取当前节点的开始位置。
@@ -67,60 +67,9 @@ export abstract class Node implements TextRange {
 type EachCallback = (node: Node, key: string | number, target: Node | NodeList<Node>) => boolean | void;
 
 /**
- * 表示一个源文件。
- */
-export class SourceFile extends Node {
-
-    /**
-     * 获取当前源文件的路径(可能不存在)。
-     */
-    path: string;
-
-    /**
-     * 获取当前源文件的内容。
-     */
-    content: string;
-
-    /**
-     * 获取当前源文件的所有注释(可能不存在)。
-     */
-    comments: Comment[];
-
-    /**
-     * 获取当前源文件的文档注释头(可能不存在)。
-     */
-    jsDoc: JsDocComment;
-
-    /**
-     * 获取当前源文件的所有语句。
-     */
-    statements: NodeList<Statement>;
-
-    /**
-     * 使用指定的节点访问器处理当前节点。
-     * @param vistior 要使用的节点访问器。
-     * @returns 返回访问器的处理结果。
-     */
-    accept(vistior: NodeVisitor) {
-        return vistior.visitSourceFile(this);
-    }
-
-    /**
-     * 遍历当前节点的所有直接子节点，并对每一项执行 *callback*。
-     * @param callback 对每个子节点执行的回调函数。
-     * @param scope 设置 *callback* 执行时 this 的值。
-     * @returns 如果遍历是因为 *callback* 返回 false 而中止，则返回 false，否则返回 true。
-     */
-    each(callback: EachCallback, scope?: any) {
-        return this.statements.each(callback, scope);
-    }
-
-}
-
-/**
  * 表示一个节点列表(<..., ...>。
  */
-export class NodeList<T extends Node> extends Array<T> implements TextRange {
+class NodeList<T extends Node> extends Array<T> implements TextRange {
 
     /**
      * 获取当前节点列表开始标记的位置(可能不存在)。
@@ -185,21 +134,9 @@ export class NodeList<T extends Node> extends Array<T> implements TextRange {
 // #region 语句
 
 /**
- * 表示一个语句。
- */
-export abstract class Statement extends Node {
-
-    /**
-     * 判断当前语句末尾是否包含分号。
-     */
-    get hasSemicolon() { return false; }
-
-}
-
-/**
  * 表示一个语句块(`{...}`)。
  */
-export class BlockStatement extends Statement {
+class BlockStatement extends Statement {
 
     /**
      * 获取当前语句块内的所有语句。
@@ -230,7 +167,7 @@ export class BlockStatement extends Statement {
 /**
  * 表示一个变量声明语句(`var xx、let xx、const xx`)。
  */
-export class VariableStatement extends Statement {
+class VariableStatement extends Statement {
 
     /**
      * 获取当前变量声明的类型。合法的值有：var、let、const。
@@ -271,7 +208,7 @@ export class VariableStatement extends Statement {
 /**
  * 表示一个变量声明(`x = 1、[x] = [1]、{a: x} = {a: 1}`)。
  */
-export class VariableDeclaration extends Node {
+class VariableDeclaration extends Node {
 
     /**
      * 获取当前声明的名字部分。
@@ -331,35 +268,9 @@ export class VariableDeclaration extends Node {
 }
 
 /**
- * 表示一个空语句(`;`)。
- */
-export class EmptyStatement extends Statement {
-
-    /**
-     * 获取当前节点的结束位置。
-     */
-    get end() { return this.start + 1; }
-
-    /**
-     * 判断当前语句末尾是否包含分号。
-     */
-    get hasSemicolon() { return true; }
-
-    /**
-     * 使用指定的节点访问器处理当前节点。
-     * @param vistior 要使用的节点访问器。
-     * @returns 返回访问器的处理结果。
-     */
-    accept(vistior: NodeVisitor) {
-        return vistior.visitEmptyStatement(this);
-    }
-
-}
-
-/**
  * 表示一个标签语句(`xx: ...`)。
  */
-export class LabeledStatement extends Statement {
+class LabeledStatement extends Statement {
 
     /**
      * 获取当前标签语句的标签部分。
@@ -411,7 +322,7 @@ export class LabeledStatement extends Statement {
 /**
  * 表示一个表达式语句(x(`);`)。
  */
-export class ExpressionStatement extends Statement {
+class ExpressionStatement extends Statement {
 
     /**
      * 获取当前节点的开始位置。
@@ -452,7 +363,7 @@ export class ExpressionStatement extends Statement {
 /**
  * 表示一个 if 语句(if(`xx) ...`)。
  */
-export class IfStatement extends Statement {
+class IfStatement extends Statement {
 
     /**
      * 获取当前开括号位置(可能不存在)。
@@ -515,7 +426,7 @@ export class IfStatement extends Statement {
 /**
  * 表示一个 switch 语句(switch(`xx){...}`)。
  */
-export class SwitchStatement extends Statement {
+class SwitchStatement extends Statement {
 
     /**
      * 获取当前开括号位置(可能不存在)。
@@ -567,7 +478,7 @@ export class SwitchStatement extends Statement {
 /**
  * 表示一个 case 分支(`case ...:{...}`)。
  */
-export class CaseClause extends Node {
+class CaseClause extends Node {
 
     /**
      * 获取当前分支的标签部分(可能不存在)。
@@ -619,7 +530,7 @@ export class CaseClause extends Node {
 /**
  * 表示一个 for 语句(for(`var i = 0; i < 9; i++) ...`)。
  */
-export class ForStatement extends Statement {
+class ForStatement extends Statement {
 
     /**
      * 获取当前开括号位置(可能不存在)。
@@ -693,7 +604,7 @@ export class ForStatement extends Statement {
 /**
  * 表示一个 for..in 语句(for(`var x in y) ...`)。
  */
-export class ForInStatement extends Statement {
+class ForInStatement extends Statement {
 
     /**
      * 获取当前开括号位置(可能不存在)。
@@ -756,7 +667,7 @@ export class ForInStatement extends Statement {
 /**
  * 表示一个 for..of 语句(for(`var x of y) ...`)。
  */
-export class ForOfStatement extends Statement {
+class ForOfStatement extends Statement {
 
     /**
      * 获取当前开括号位置(可能不存在)。
@@ -819,7 +730,7 @@ export class ForOfStatement extends Statement {
 /**
  * 表示一个 for..to 语句(for(`var x = 0 to 10) ...`)。
  */
-export class ForToStatement extends Statement {
+class ForToStatement extends Statement {
 
     /**
      * 获取当前开括号位置(可能不存在)。
@@ -882,7 +793,7 @@ export class ForToStatement extends Statement {
 /**
  * 表示一个 while 语句(while(`...) ...`)。
  */
-export class WhileStatement extends Statement {
+class WhileStatement extends Statement {
 
     /**
      * 获取当前开括号位置(可能不存在)。
@@ -934,7 +845,7 @@ export class WhileStatement extends Statement {
 /**
  * 表示一个 do..while 语句(do ... while(`xx);`)。
  */
-export class DoWhileStatement extends Statement {
+class DoWhileStatement extends Statement {
 
     /**
      * 获取当前 do..while 语句的主体部分。
@@ -991,7 +902,7 @@ export class DoWhileStatement extends Statement {
 /**
  * 表示一个 continue 语句(`continue xx;`)。
  */
-export class ContinueStatement extends Statement {
+class ContinueStatement extends Statement {
 
     /**
      * 获取当前 continue 语句的标签部分(可能不存在)。
@@ -1027,7 +938,7 @@ export class ContinueStatement extends Statement {
 /**
  * 表示一个 break 语句(`break xx;`)。
  */
-export class BreakStatement extends Statement {
+class BreakStatement extends Statement {
 
     /**
      * 获取当前 break 语句的标签部分(可能不存在)。
@@ -1063,7 +974,7 @@ export class BreakStatement extends Statement {
 /**
  * 表示一个 return 语句(`return xx;`)。
  */
-export class ReturnStatement extends Statement {
+class ReturnStatement extends Statement {
 
     /**
      * 获取当前 return 语句的返回值部分(可能不存在)。
@@ -1099,7 +1010,7 @@ export class ReturnStatement extends Statement {
 /**
  * 表示一个 throw 语句(`throw xx;`)。
  */
-export class ThrowStatement extends Statement {
+class ThrowStatement extends Statement {
 
     /**
      * 获取当前 throw 语句的参数部分。
@@ -1135,7 +1046,7 @@ export class ThrowStatement extends Statement {
 /**
  * 表示一个 try 语句(try {...} catch(`e) {...}`)。
  */
-export class TryStatement extends Statement {
+class TryStatement extends Statement {
 
     /**
      * 获取当前 try 语句的 try 部分。
@@ -1183,7 +1094,7 @@ export class TryStatement extends Statement {
 /**
  * 表示一个 catch 分句(catch(`e) {...}`)。
  */
-export class CatchClause extends Node {
+class CatchClause extends Node {
 
     /**
      * 获取异常变量的开括号的位置。
@@ -1234,7 +1145,7 @@ export class CatchClause extends Node {
 /**
  * 表示一个 finally 分句(`finally {...}`)。
  */
-export class FinallyClause extends Node {
+class FinallyClause extends Node {
 
     /**
      * 获取当前 finally 分句的主体部分。
@@ -1270,7 +1181,7 @@ export class FinallyClause extends Node {
 /**
  * 表示一个 debugger 语句(`debugger;`)。
  */
-export class DebuggerStatement extends Statement {
+class DebuggerStatement extends Statement {
 
     /**
      * 判断当前语句末尾是否包含分号。
@@ -1291,7 +1202,7 @@ export class DebuggerStatement extends Statement {
 /**
  * 表示一个 with 语句(with(`xx) ...`)。
  */
-export class WithStatement extends Statement {
+class WithStatement extends Statement {
 
     /**
      * 获取异常变量的开括号的位置。
@@ -1347,7 +1258,7 @@ export class WithStatement extends Statement {
 /**
  * 表示一个声明(function fn(`) {...}、class T { ... }、...`)。
  */
-export abstract class Declaration extends Statement {
+abstract class Declaration extends Statement {
 
     /**
      * 获取当前声明的所有修饰器(可能不存在)。
@@ -1374,7 +1285,7 @@ export abstract class Declaration extends Statement {
 /**
  * 表示一个修饰器(`@xx`)。
  */
-export class Decorator extends Node {
+class Decorator extends Node {
 
     /**
      * 获取当前修饰器的主体部分。
@@ -1410,7 +1321,7 @@ export class Decorator extends Node {
 /**
  * 表示一个修饰符(`static、private、...`)。
  */
-export class Modifier extends Node {
+class Modifier extends Node {
 
     /**
      * 获取当前修饰符的类型。合法的值有：static、abstract、public、protected、private、...。
@@ -1436,7 +1347,7 @@ export class Modifier extends Node {
 /**
  * 表示一个类型参数声明(`T、T extends R`)。
  */
-export class TypeParametersDeclaration extends Node {
+class TypeParametersDeclaration extends Node {
 
     /**
      * 获取当前类型参数的名字部分。
@@ -1478,7 +1389,7 @@ export class TypeParametersDeclaration extends Node {
 /**
  * 表示一个函数声明(function fn() {...}、function * fn(`){...}`)。
  */
-export class FunctionDeclaration extends Declaration {
+class FunctionDeclaration extends Declaration {
 
     /**
      * 获取 function 关键字的位置。
@@ -1545,7 +1456,7 @@ export class FunctionDeclaration extends Declaration {
 /**
  * 表示一个函数表达式(function (`) {}`)。
  */
-export class FunctionExpression extends Expression {
+class FunctionExpression extends Expression {
 
     /**
      * 获取当前星号的位置(可能不存在)。
@@ -1615,7 +1526,7 @@ export class FunctionExpression extends Expression {
 /**
  * 表示一个箭头函数表达式(`x => y`)。
  */
-export class ArrowFunctionExpression extends Expression {
+class ArrowFunctionExpression extends Expression {
 
     /**
      * 获取当前箭头函数的所有修饰符(可能不存在)。
@@ -1688,7 +1599,7 @@ export class ArrowFunctionExpression extends Expression {
 /**
  * 表示一个参数声明(`x、x = 1、...x`)。
  */
-export class ParameterDeclaration extends Node {
+class ParameterDeclaration extends Node {
 
     /**
      * 获取当前参数声明的所有修饰符(可能不存在)。
@@ -1761,7 +1672,7 @@ export class ParameterDeclaration extends Node {
 /**
  * 表示一个类声明(`class T {...}`)。
  */
-export class ClassDeclaration extends Declaration {
+class ClassDeclaration extends Declaration {
 
     /**
      * 获取 class 关键字的位置。
@@ -1828,7 +1739,7 @@ export class ClassDeclaration extends Declaration {
 /**
  * 表示一个类表达式(`class xx {}`)。
  */
-export class ClassExpression extends Expression {
+class ClassExpression extends Expression {
 
     /**
      * 获取当前类的名字部分(可能不存在)。
@@ -1898,7 +1809,7 @@ export class ClassExpression extends Expression {
 /**
  * 表示一个类型成员声明(x: 1、x() {}、get x(){}、set x(`value){}`)。
  */
-export abstract class TypeMemberDeclaration extends Node {
+abstract class TypeMemberDeclaration extends Node {
 
     /**
      * 获取当前声明的所有修饰器(可能不存在)。
@@ -1915,7 +1826,7 @@ export abstract class TypeMemberDeclaration extends Node {
 /**
  * 表示一个属性声明(`x: 1`)。
  */
-export class PropertyDeclaration extends TypeMemberDeclaration {
+class PropertyDeclaration extends TypeMemberDeclaration {
 
     /**
      * 获取当前属性的名字部分。
@@ -1977,81 +1888,9 @@ export class PropertyDeclaration extends TypeMemberDeclaration {
 }
 
 /**
- * 表示一个方法声明(fn(`) {...}`)。
- */
-export class MethodDeclaration extends TypeMemberDeclaration {
-
-    /**
-     * 获取当前方法的所有类型参数(可能不存在)。
-     */
-    typeParameters: NodeList<TypeParametersDeclaration>;
-
-    /**
-     * 获取当前方法的所有参数。
-     */
-    parameters: NodeList<ParameterDeclaration>;
-
-    /**
-     * 获取当前方法的名字部分。
-     */
-    name: Identifier;
-
-    /**
-     * 获取当前方法返回类型前冒号的位置(可能不存在)。
-     */
-    colonToken: number;
-
-    /**
-     * 获取当前方法的返回类型(可能不存在)。
-     */
-    returnType: Expression;
-
-    /**
-     * 获取当前方法的主体。
-     */
-    body: ArrowFunctionExpression | BlockStatement;
-
-    /**
-     * 获取当前节点的开始位置。
-     */
-    get start() { return this.decorators ? this.decorators.start : this.modifiers ? this.modifiers.start : this.name.start; }
-
-    /**
-     * 获取当前节点的结束位置。
-     */
-    get end() { return this.body.end; }
-
-    /**
-     * 使用指定的节点访问器处理当前节点。
-     * @param vistior 要使用的节点访问器。
-     * @returns 返回访问器的处理结果。
-     */
-    accept(vistior: NodeVisitor) {
-        return vistior.visitMethodDeclaration(this);
-    }
-
-    /**
-     * 遍历当前节点的所有直接子节点，并对每一项执行 *callback*。
-     * @param callback 对每个子节点执行的回调函数。
-     * @param scope 设置 *callback* 执行时 this 的值。
-     * @returns 如果遍历是因为 *callback* 返回 false 而中止，则返回 false，否则返回 true。
-     */
-    each(callback: EachCallback, scope?: any) {
-        return (!this.decorators || this.decorators.each(callback, scope)) &&
-            (!this.modifiers || this.modifiers.each(callback, scope)) &&
-            (!this.typeParameters || this.typeParameters.each(callback, scope)) &&
-            this.parameters.each(callback, scope) &&
-            callback.call(scope, this.name, "name", this) !== false &&
-            (!this.returnType || callback.call(scope, this.returnType, "returnType", this) !== false) &&
-            callback.call(scope, this.body, "body", this) !== false;
-    }
-
-}
-
-/**
  * 表示一个访问器声明(get fn() {...}、set fn(`) {...}`)。
  */
-export class AccessorDeclaration extends MethodDeclaration {
+class AccessorDeclaration extends MethodDeclaration {
 
     /**
      * 获取 get 关键字的位置(可能不存在)。
@@ -2098,7 +1937,7 @@ export class AccessorDeclaration extends MethodDeclaration {
 /**
  * 表示一个接口声明(`interface T {...}`)。
  */
-export class InterfaceDeclaration extends Declaration {
+class InterfaceDeclaration extends Declaration {
 
     /**
      * 获取当前接口的所有基接口(可能不存在)。
@@ -2149,7 +1988,7 @@ export class InterfaceDeclaration extends Declaration {
 /**
  * 表示一个接口表达式(`interface xx {}`)。
  */
-export class InterfaceExpression extends Expression {
+class InterfaceExpression extends Expression {
 
     /**
      * 获取当前接口的名字(可能不存在)。
@@ -2198,7 +2037,7 @@ export class InterfaceExpression extends Expression {
 /**
  * 表示一个枚举声明(`enum T {}`)。
  */
-export class EnumDeclaration extends Declaration {
+class EnumDeclaration extends Declaration {
 
     /**
      * 获取当前枚举的所有成员(可能不存在)。
@@ -2238,7 +2077,7 @@ export class EnumDeclaration extends Declaration {
 /**
  * 表示一个枚举表达式(`enum xx {}`)。
  */
-export class EnumExpression extends Expression {
+class EnumExpression extends Expression {
 
     /**
      * 获取当前枚举的名字(可能不存在)。
@@ -2275,7 +2114,7 @@ export class EnumExpression extends Expression {
 /**
  * 表示一个枚举成员声明(`xx = 1`)。
  */
-export class EnumMemberDeclaration extends Declaration {
+class EnumMemberDeclaration extends Declaration {
 
     /**
      * 获取当前枚举成员名后的等号位置(可能不存在)。
@@ -2320,7 +2159,7 @@ export class EnumMemberDeclaration extends Declaration {
 /**
  * 表示一个命名空间声明(`namespace abc {...}、module abc {...}`)。
  */
-export class NamespaceDeclaration extends Node {
+class NamespaceDeclaration extends Node {
 
     /**
      * 获取当前命名空间定义的类型。合法的值有：namespace、module。
@@ -2367,7 +2206,7 @@ export class NamespaceDeclaration extends Node {
 /**
  * 表示一个 import 声明(`import xx from '...';`)。
  */
-export class ImportDeclaration extends Statement {
+class ImportDeclaration extends Statement {
 
     /**
      * 获取当前导入的元素列表。
@@ -2409,7 +2248,7 @@ export class ImportDeclaration extends Statement {
 /**
  * 表示一个 import = 指令(import xx = require(`"");`)。
  */
-export class ImportAliasDeclaration extends Statement {
+class ImportAliasDeclaration extends Statement {
 
     /**
      * 获取当前导入的元素列表。
@@ -2450,7 +2289,7 @@ export class ImportAliasDeclaration extends Statement {
 /**
  * 表示一个名字导入声明项(`a as b`)。
  */
-export class NameImportClause extends Node {
+class NameImportClause extends Node {
 
     /**
      * 获取当前导入的名称(可能不存在)。
@@ -2491,7 +2330,7 @@ export class NameImportClause extends Node {
 /**
  * 表示一个命名空间导入声明项(`{a as b}`)。
  */
-export class NamespaceImportClause extends Node {
+class NamespaceImportClause extends Node {
 
     /**
      * 获取当前的所有导入项。
@@ -2520,9 +2359,9 @@ export class NamespaceImportClause extends Node {
 }
 
 /**
- * 表示一个 export 指令(`export xx from '...';`)。
+ * 表示一个 指令(`xx from '...';`)。
  */
-export class ExportDirective extends Statement {
+class ExportDirective extends Statement {
 
     /**
      * 获取当前导入的元素列表。
@@ -2562,9 +2401,9 @@ export class ExportDirective extends Statement {
 }
 
 /**
- * 表示一个 export = 指令(`export = 1;`)。
+ * 表示一个 = 指令(`= 1;`)。
  */
-export class ExportEqualsDirective extends Statement {
+class ExportEqualsDirective extends Statement {
 
     /**
      * 获取当前导入声明的等号位置。
@@ -2602,23 +2441,6 @@ export class ExportEqualsDirective extends Statement {
 // #region 表达式
 
 /**
- * 表示一个表达式。
- */
-export abstract class Expression extends Node {
-
-    /**
-     * 获取错误表达式。该表达式可作为语法解析错误时的替代表达式使用。
-     */
-    static error = Object.freeze(new EmptyExpression());
-
-    /**
-     * 获取空表达式。
-     */
-    static empty = Object.freeze(new EmptyExpression());
-
-}
-
-/**
  * 表示一个空表达式。
  */
 class EmptyExpression extends Expression {
@@ -2635,7 +2457,7 @@ class EmptyExpression extends Expression {
 /**
  * 表示一个错误表达式。
  */
-export class ErrorExpression extends Expression {
+class ErrorExpression extends Expression {
 
     /**
      * 使用指定的节点访问器处理当前节点。
@@ -2649,61 +2471,9 @@ export class ErrorExpression extends Expression {
 }
 
 /**
- * 表示一个标识符(`x`)。
- */
-export class Identifier extends Expression {
-
-    /**
-     * 获取当前标识符的内容。
-     */
-    private _value: string;
-
-    /**
-     * 获取当前标识符的内容。
-     */
-    get value() { return this._value; }
-
-    /**
-     * 获取当前标识符的内容。
-     */
-    set value(value) { this._value = intern(value); }
-
-    /**
-     * 存储当前节点的结束位置。
-     */
-    private _end: number;
-
-    /**
-     * 获取当前节点的结束位置。
-     */
-    get end() {
-        return this._end != undefined ? this._end : this.start + this.value.length;
-    }
-
-    /**
-     * 设置当前节点的结束位置。
-     */
-    set end(value) {
-        if (this.start + this.value.length !== value) {
-            this._end = value;
-        }
-    }
-
-    /**
-     * 使用指定的节点访问器处理当前节点。
-     * @param vistior 要使用的节点访问器。
-     * @returns 返回访问器的处理结果。
-     */
-    accept(vistior: NodeVisitor) {
-        return vistior.visitIdentifier(this);
-    }
-
-}
-
-/**
  * 表示一个泛型表达式(`foo<number>`)。
  */
-export class GenericExpression extends Expression {
+class GenericExpression extends Expression {
 
     /**
      * 获取当前泛型表达式的元素部分。
@@ -2748,35 +2518,9 @@ export class GenericExpression extends Expression {
 }
 
 /**
- * 表示一个简单字面量(`this`、`super`、`null`、`true`、`false`)。
- */
-export class SimpleLiteral extends Expression {
-
-    /**
-     * 获取当前字面量的类型。合法的值有：this、super、null、true、false。
-     */
-    type: TokenType;
-
-    /**
-     * 获取当前节点的结束位置。
-     */
-    get end() { return this.start + tokenToString(this.type).length; }
-
-    /**
-     * 使用指定的节点访问器处理当前节点。
-     * @param vistior 要使用的节点访问器。
-     * @returns 返回访问器的处理结果。
-     */
-    accept(vistior: NodeVisitor) {
-        return vistior.visitSimpleLiteral(this);
-    }
-
-}
-
-/**
  * 表示一个数字字面量(`1`)。
  */
-export class NumericLiteral extends Expression {
+class NumericLiteral extends Expression {
 
     /**
      * 获取当前数字的值。
@@ -2818,7 +2562,7 @@ export class NumericLiteral extends Expression {
 /**
  * 表示一个字符串字面量(`'abc'`、`"abc"`、`\`abc\``)。
  */
-export class StringLiteral extends Expression {
+class StringLiteral extends Expression {
 
     /**
      * 获取当前字符串字面量的引号类型。合法的值有：'、"、`。
@@ -2865,7 +2609,7 @@ export class StringLiteral extends Expression {
 /**
  * 表示一个模板字面量(``abc${x + y}def``)。
  */
-export class TemplateLiteral extends Expression {
+class TemplateLiteral extends Expression {
 
     /**
      * 获取当前模板字符串的所有组成部分。
@@ -2906,7 +2650,7 @@ export class TemplateLiteral extends Expression {
 /**
  * 表示一个模板字面量的一个文本区域(`\`abc${、}abc${、}abc\``)。
  */
-export class TemplateSpan extends Node {
+class TemplateSpan extends Node {
 
     /**
      * 获取当前区块的值。
@@ -2927,7 +2671,7 @@ export class TemplateSpan extends Node {
 /**
  * 表示一个正则表达式字面量(`/abc/`)。
  */
-export class RegularExpressionLiteral extends Expression {
+class RegularExpressionLiteral extends Expression {
 
     /**
      * 获取当前正则表达式的值。
@@ -2953,7 +2697,7 @@ export class RegularExpressionLiteral extends Expression {
 /**
  * 表示一个数组字面量(`[x, y]`)。
  */
-export class ArrayLiteral extends Expression {
+class ArrayLiteral extends Expression {
 
     /**
      * 获取当前数组字面量的所有项。
@@ -2994,7 +2738,7 @@ export class ArrayLiteral extends Expression {
 /**
  * 表示一个对象字面量(`{x: y}`)。
  */
-export class ObjectLiteral extends Expression {
+class ObjectLiteral extends Expression {
 
     /**
      * 获取当前对象字面量的所有项。
@@ -3035,7 +2779,7 @@ export class ObjectLiteral extends Expression {
 /**
  * 表示一个箭头函数表达式(`=> xx`)。
  */
-export class ArrowExpression extends Expression {
+class ArrowExpression extends Expression {
 
     /**
      *获取当前表达式的主体部分。
@@ -3066,7 +2810,7 @@ export class ArrowExpression extends Expression {
 /**
  * 表示一个括号表达式((`x)`)。
  */
-export class ParenthesizedExpression extends Expression {
+class ParenthesizedExpression extends Expression {
 
     /**
      * 获取当前括号表达式的主体部分。
@@ -3097,7 +2841,7 @@ export class ParenthesizedExpression extends Expression {
 /**
  * 表示一个成员调用表达式(`x.y`)。
  */
-export class MemberCallExpression extends Expression {
+class MemberCallExpression extends Expression {
 
     /**
      * 获取当前调用的目标部分。
@@ -3149,7 +2893,7 @@ export class MemberCallExpression extends Expression {
 /**
  * 表示一个函数调用表达式(x(`)`)。
  */
-export class FunctionCallExpression extends Expression {
+class FunctionCallExpression extends Expression {
 
     /**
      * 获取当前调用的目标部分。
@@ -3196,7 +2940,7 @@ export class FunctionCallExpression extends Expression {
 /**
  * 表示一个索引调用表达式(`x[y]`)。
  */
-export class IndexCallExpression extends Expression {
+class IndexCallExpression extends Expression {
 
     /**
      * 获取当前调用的目标部分。
@@ -3243,7 +2987,7 @@ export class IndexCallExpression extends Expression {
 /**
  * 表示一个模板调用表达式(`x\`abc\``)。
  */
-export class TemplateCallExpression extends Expression {
+class TemplateCallExpression extends Expression {
 
     /**
      * 获取当前调用的目标部分。
@@ -3290,7 +3034,7 @@ export class TemplateCallExpression extends Expression {
 /**
  * 表示一个 new 表达式(`new x()`)。
  */
-export class NewExpression extends Expression {
+class NewExpression extends Expression {
 
     /**
      * 获取当前调用的目标部分。
@@ -3332,7 +3076,7 @@ export class NewExpression extends Expression {
 /**
  * 表示一个 new.target 表达式(`new.target`)。
  */
-export class NewTargetExpression extends Expression {
+class NewTargetExpression extends Expression {
 
     /**
      * 获取点的位置。
@@ -3353,7 +3097,7 @@ export class NewTargetExpression extends Expression {
 /**
  * 表示一个一元运算表达式(`+x、typeof x、...`)。
  */
-export class UnaryExpression extends Expression {
+class UnaryExpression extends Expression {
 
     /**
      * 获取当前运算的类型。合法的值有：`...`、`+`、`-`、`delete`、`void`、`typeof`、`~`、`!`、`++`、`--`。
@@ -3394,7 +3138,7 @@ export class UnaryExpression extends Expression {
 /**
  * 表示一个后缀增量运算表达式(`x++`、`x--`)。
  */
-export class PostfixIncrementExpression extends Expression {
+class PostfixIncrementExpression extends Expression {
 
     /**
      * 获取当前运算的类型。合法的值有：`++`、`--`。
@@ -3435,7 +3179,7 @@ export class PostfixIncrementExpression extends Expression {
 /**
  * 表示一个二元运算表达式(`x + y、x = y、...`)。
  */
-export class BinaryExpression extends Expression {
+class BinaryExpression extends Expression {
 
     /**
      * 获取当前表达式的左值部分。
@@ -3492,7 +3236,7 @@ export class BinaryExpression extends Expression {
 /**
  * 表示一个 yield 表达式(`yield x、yield * x`)。
  */
-export class YieldExpression extends Expression {
+class YieldExpression extends Expression {
 
     /**
      * 获取当前表达式的 * 的位置(可能不存在)。
@@ -3533,7 +3277,7 @@ export class YieldExpression extends Expression {
 /**
  * 表示一个条件表达式(`x ? y : z`)。
  */
-export class ConditionalExpression extends Expression {
+class ConditionalExpression extends Expression {
 
     /**
      * 获取当前条件表达式的条件部分。
@@ -3586,7 +3330,7 @@ export class ConditionalExpression extends Expression {
 /**
  * 表示一个类型确认表达式(`<T>xx`)。
  */
-export class TypeAssertionExpression extends Expression {
+class TypeAssertionExpression extends Expression {
 
     /**
      * 获取当前类型转换表达式的类型部分。
@@ -3632,14 +3376,14 @@ export class TypeAssertionExpression extends Expression {
 /**
  * 表示一个 Jsx 节点(`<div>...</div>`)。
  */
-export abstract class JsxNode extends Expression {
+abstract class JsxNode extends Expression {
 
 }
 
 /**
  * 表示一个 JSX 标签(`<div>...</div>`)。
  */
-export class JsxElement extends JsxNode {
+class JsxElement extends JsxNode {
 
     /**
      * 获取当前标签的名字。
@@ -3687,7 +3431,7 @@ export class JsxElement extends JsxNode {
 /**
  * 表示一个 JSX 标签属性(`id="a"`)。
  */
-export class JsxAttribute extends JsxNode {
+class JsxAttribute extends JsxNode {
 
     /**
      * 获取当前属性的名字。
@@ -3729,7 +3473,7 @@ export class JsxAttribute extends JsxNode {
 /**
  * 表示一个 JSX 文本(`{...}`)。
  */
-export class JsxText extends JsxNode {
+class JsxText extends JsxNode {
 
     /**
      * 获取当前文本的值。
@@ -3749,7 +3493,7 @@ export class JsxText extends JsxNode {
 /**
  * 表示一个 JSX 表达式(`{...}`)。
  */
-export class JsxExpression extends JsxNode {
+class JsxExpression extends JsxNode {
 
     /**
      * 获取当前表达式的主体。
@@ -3779,7 +3523,7 @@ export class JsxExpression extends JsxNode {
 /**
  * 表示一个 JSX 关闭元素(`{...}`)。
  */
-export class JsxClosingElement extends JsxNode {
+class JsxClosingElement extends JsxNode {
 
     /**
      * 获取当前标签的名字。
@@ -3819,14 +3563,14 @@ export class JsxClosingElement extends JsxNode {
 /**
  * 表示一个类型节点(`number`、`string[]`、...)。
  */
-export abstract class TypeNode extends Node {
+abstract class TypeNode extends Node {
 
 }
 
 /**
  * 表示一个简单类型节点(`number`、`string`、...)。
  */
-export class SimpleTypeNode extends TypeNode {
+class SimpleTypeNode extends TypeNode {
 
     /**
      * 获取当前简单类型节点的类型。合法的值有：this、any、number、string、boolean、symbol、void、never、*、?。
@@ -3852,7 +3596,7 @@ export class SimpleTypeNode extends TypeNode {
 /**
  * 表示一个泛型节点(`Array<T>`)。
  */
-export class GenericTypeNode extends TypeNode {
+class GenericTypeNode extends TypeNode {
 
     /**
      * 获取当前类型表达式的元素部分。
@@ -3889,7 +3633,7 @@ export class GenericTypeNode extends TypeNode {
 /**
  * 表示一个数组类型节点(`T[]`)。
  */
-export class ArrayTypeNode extends TypeNode {
+class ArrayTypeNode extends TypeNode {
 
     /**
      * 获取当前数组类型的基础类型。
@@ -3930,7 +3674,7 @@ export class ArrayTypeNode extends TypeNode {
 /**
  * 表示一个函数类型节点(`()=>void`)。
  */
-export class FunctionTypeNode extends TypeNode {
+class FunctionTypeNode extends TypeNode {
 
     /**
      * 获取当前声明的所有类型参数(可能不存在)。
@@ -3961,7 +3705,7 @@ export class FunctionTypeNode extends TypeNode {
 /**
  * 表示一个构造函数类型节点(`new ()=>void`)。
  */
-export class ConstructorTypeNode extends TypeNode {
+class ConstructorTypeNode extends TypeNode {
 
     /**
      * 使用指定的节点访问器处理当前节点。
@@ -3977,7 +3721,7 @@ export class ConstructorTypeNode extends TypeNode {
 /**
  * 表示一个元祖类型节点(`[string, number]`)。
  */
-export class TupleTypeNode extends TypeNode {
+class TupleTypeNode extends TypeNode {
 
     /**
      * 使用指定的节点访问器处理当前节点。
@@ -3993,7 +3737,7 @@ export class TupleTypeNode extends TypeNode {
 /**
  * 表示一个联合类型节点(`number | string`)。
  */
-export class UnionTypeNode extends TypeNode {
+class UnionTypeNode extends TypeNode {
 
     /**
      * 使用指定的节点访问器处理当前节点。
@@ -4009,7 +3753,7 @@ export class UnionTypeNode extends TypeNode {
 /**
  * 表示一个交错类型节点(`number & string`)。
  */
-export class IntersectionTypeNode extends TypeNode {
+class IntersectionTypeNode extends TypeNode {
 
     /**
      * 使用指定的节点访问器处理当前节点。
@@ -4025,7 +3769,7 @@ export class IntersectionTypeNode extends TypeNode {
 /**
  * 表示一个对象类型节点(`{x: string}`)。
  */
-export class ObjectTypeNode extends TypeNode {
+class ObjectTypeNode extends TypeNode {
 
     /**
      * 使用指定的节点访问器处理当前节点。
@@ -4041,7 +3785,7 @@ export class ObjectTypeNode extends TypeNode {
 /**
  * 表示一个类型查询节点(`typeof x`)。
  */
-export class TypeQueryNode extends TypeNode {
+class TypeQueryNode extends TypeNode {
 
     /**
      * 使用指定的节点访问器处理当前节点。
@@ -4057,7 +3801,7 @@ export class TypeQueryNode extends TypeNode {
 /**
  * 表示一个括号类型节点(`(number)`)。
  */
-export class ParenthesizedTypeNode extends TypeNode {
+class ParenthesizedTypeNode extends TypeNode {
 
     /**
      * 获取当前括号类型节点的主体部分。
@@ -4088,7 +3832,7 @@ export class ParenthesizedTypeNode extends TypeNode {
 /**
  * 表示一个表达式类型节点(`"abc"`、`true`)。
  */
-export class ExpressionTypeNode extends TypeNode {
+class ExpressionTypeNode extends TypeNode {
 
     /**
      * 使用指定的节点访问器处理当前节点。
@@ -4104,7 +3848,7 @@ export class ExpressionTypeNode extends TypeNode {
 /**
  * 表示一个限定名称类型节点(`"abc"`、`true`)。
  */
-export class QualifiedNameTypeNode extends TypeNode {
+class QualifiedNameTypeNode extends TypeNode {
 
     /**
      * 使用指定的节点访问器处理当前节点。
@@ -4120,7 +3864,7 @@ export class QualifiedNameTypeNode extends TypeNode {
 /**
  * 表示一个类型别名声明(`type A = number`)。
  */
-export class TypeAliasDeclaration extends Statement {
+class TypeAliasDeclaration extends Statement {
 
     /**
      * 使用指定的节点访问器处理当前节点。
@@ -4140,17 +3884,17 @@ export class TypeAliasDeclaration extends Statement {
 /**
  * 表示一个绑定名称(`xx、[xx]、{x:x}`)。
  */
-export type BindingName = Identifier | ArrayBindingPattern | ObjectBindingPattern;
+type BindingName = Identifier | ArrayBindingPattern | ObjectBindingPattern;
 
 /**
  * 表示一个属性名称(`xx、"xx"、[xx]`)。
  */
-export type PropertyName = Identifier | NumericLiteral | StringLiteral | ComputedPropertyName;
+type PropertyName = Identifier | NumericLiteral | StringLiteral | ComputedPropertyName;
 
 /**
  * 表示一个数组绑定模式项(`[xx]`)。
  */
-export class ArrayBindingPattern extends Node {
+class ArrayBindingPattern extends Node {
 
     /**
      * 获取当前数组绑定模式项的所有元素。
@@ -4181,7 +3925,7 @@ export class ArrayBindingPattern extends Node {
 /**
  * 表示一个数组绑定模式项(xx、..)
  */
-export class ArrayBindingElement extends Node {
+class ArrayBindingElement extends Node {
 
     /**
      * 获取当前声明的名字部分。
@@ -4237,7 +3981,7 @@ export class ArrayBindingElement extends Node {
 /**
  * 表示一个对象绑定模式项(`{xx: xx}`)。
  */
-export class ObjectBindingPattern extends Node {
+class ObjectBindingPattern extends Node {
 
     /**
      * 获取当前对象绑定模式项的所有元素。
@@ -4268,7 +4012,7 @@ export class ObjectBindingPattern extends Node {
 /**
  * 表示一个对象绑定模式项(xx: y)
  */
-export class ObjectBindingElement extends Node {
+class ObjectBindingElement extends Node {
 
     /**
      * 获取对象绑定模式项的属性名。
@@ -4329,7 +4073,7 @@ export class ObjectBindingElement extends Node {
 /**
  * 表示一个已计算的属性名。
  */
-export class ComputedPropertyName extends Node {
+class ComputedPropertyName extends Node {
 
     /**
      * 获取当前属性名的主体部分。
@@ -4354,31 +4098,6 @@ export class ComputedPropertyName extends Node {
     accept(vistior: NodeVisitor) {
         return vistior.visitComputedPropertyName(this);
     }
-
-}
-
-// #endregion
-
-// #region 注释
-
-/**
- * 表示一个 JS 注释。
- */
-export interface Comment {
-
-}
-
-/**
- * 表示一个包含 \<reference /> 的注释。
- */
-export interface ReferenceComment extends Comment {
-
-}
-
-/**
- * 表示一个 JS 文档注释。
- */
-export interface JsDocComment extends Comment {
 
 }
 

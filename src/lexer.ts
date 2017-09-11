@@ -1,13 +1,11 @@
-﻿import { TokenType, stringToToken } from '../ast/tokenType';
-import { options, error, ErrorType, LanguageVersion, ParseCommentsOption } from '../compiler/compiler';
-import { CharCode } from './charCode';
-import * as Unicode from './unicode';
+/**
+ * @file 词法解析器
+ */
 
 /**
  * 表示一个词法解析器。
- * @description 词法解析器可以将源码解析成多个标记的序列。
  */
-export class Lexer {
+class Lexer {
 
     // #region 接口
 
@@ -474,7 +472,7 @@ export class Lexer {
                                 result.type = TokenType.asteriskAsteriskEquals;
                                 break;
                             }
-                            result.type = TokenType.asteriskAsterisk;
+                            result.type = TokenType.power;
                             break;
                         case CharCode.equals:
                             this.pos++; // =
@@ -1056,10 +1054,10 @@ export class Lexer {
 /**
  * 表示一个标记。
  */
-export interface Token {
+class Token {
 
     /**
-     * 获取下一个标记。如果下一个标记未解析则返回 undefined。
+     * 下一个标记。如果下一个标记未解析则返回 undefined。
      */
     _next?: Token;
 
@@ -1088,4 +1086,578 @@ export interface Token {
      */
     data?: any;
 
+}
+
+/**
+ * 表示一个标记类型。
+ */
+enum TokenType {
+
+    // #region 控制符（Control）
+
+    /**
+     * 未知标记。
+     */
+    unknown,
+
+    /**
+     * 文件已结束（EOF）。
+     */
+    endOfFile,
+
+    // #endregion
+
+    // #region 声明（Declarations）
+
+    /**
+     * 关键字 class。
+     */
+    class,
+
+    /**
+     * 关键字 enum。
+     */
+    enum,
+
+    // #endregion
+
+    // #region 字面量（Literal）
+
+    /**
+     * 标识符（`abc`）。
+     */
+    identifier,
+
+    /**
+     * 数字常量（`0x0`）。
+     */
+    numericLiteral,
+
+    /**
+     * 带单位的常量（`0px`）。
+     */
+    unitLiteral,
+    
+    /**
+     * 字符串常量（`'abc'`）。
+     */
+    stringLiteral,
+
+    /**
+     * 模板字符串常量（`\`...\``）。
+     */
+    noSubstitutionTemplateLiteral,
+
+    /**
+     * 模板字符串头（`\`...$(`）。
+     */
+    templateHead,
+
+    /**
+     * 模板字符串主体（`}...$(`）。
+     */
+    templateMiddle,
+
+    /**
+     * 模板字符串尾（`)...\``）。
+     */
+    templateTail,
+
+    /**
+     * 关键字 null。
+     */
+    null,
+
+    /**
+     * 关键字 true。
+     */
+    true,
+
+    /**
+     * 关键字 false。
+     */
+    false,
+
+    /**
+     * 关键字 this。
+     */
+    this,
+
+    /**
+     * 关键字 base。
+     */
+    base,
+
+    // #endregion
+
+    // #region 单目运算符（Unary Operators）
+
+    /**
+     * 开花括号（`{`）。
+     * @precedence 80
+     */
+    openBrace,
+
+    /**
+     * 非（`!`）。
+     */
+    exclamation,
+
+    /**
+     * 波浪线(`~`)。
+     */
+    tilde,
+
+    /**
+     * 电子邮件符号（@）。
+     */
+    at,
+
+    // #endregion
+
+    // #region 单/双目运算符（Unary & Binary Operators）
+
+    /**
+     * 开括号（`(`）。
+     */
+    openParen,
+
+    /**
+     * 开方括号（`[`）。
+     */
+    openBracket,
+
+    /**
+     * 加(`+`)。
+     */
+    plus,
+
+    /**
+     * 减（`-`）。
+     */
+    minus,
+
+    /**
+     * 斜杠（`/`）。
+     */
+    slash,
+
+    /**
+     * 加加（`++`）。
+     */
+    plusPlus,
+
+    /**
+     * 减减（`--`）。
+     */
+    minusMinus,
+
+    /**
+     * 小于（`<`）。
+     */
+    lessThan,
+
+    /**
+     * 箭头（`=>`）。
+     */
+    equalsGreaterThan,
+
+    /**
+     * 点点点（`...`）。
+     */
+    dotDotDot,
+
+    // #endregion
+
+    // #region 双目运算符（Binary Operators）
+
+    /**
+     * 星号（`*`）。
+     */
+    asterisk,
+
+    /**
+     * 位与（`&`）。
+     */
+    ampersand,
+
+    /**
+     * 点（`.`）。
+     */
+    dot,
+
+    /**
+     * 点点（`..`）。
+     */
+    dotDot,
+
+    /**
+     * 百分号（`%`）。
+     */
+    percent,
+
+    /**
+     * 大于（`>`）。
+     */
+    greaterThan,
+
+    /**
+     * 小于等于（`<=`）。
+     */
+    lessThanEquals,
+
+    /**
+     * 大于等于（`>=`）。
+     */
+    greaterThanEquals,
+
+    /**
+     * 等于等于（`==`）。
+     */
+    equalsEquals,
+
+    /**
+     * 不等于（`!=`）。
+     */
+    exclamationEquals,
+
+    /**
+     * 位或（`|`）。
+     */
+    bar,
+
+    /**
+     * 幂（`^`）。
+     */
+    caret,
+
+    /**
+     * 与（`&&`）。
+     */
+    ampersandAmpersand,
+
+    /**
+     * 或（`||`）。
+     */
+    barBar,
+
+    /**
+     * 等于（`=`）。
+     */
+    equals,
+
+    /**
+     * 加等于（`+=`）。
+     */
+    plusEquals,
+
+    /**
+     * 减等于（`-=`）。
+     */
+    minusEquals,
+
+    /**
+     * 乘等于（`*=`）。
+     */
+    asteriskEquals,
+
+    /**
+     * 幂等于（`^=`）。
+     */
+    powerEquals,
+
+    /**
+     * 斜杠等于（`/=`）。
+     */
+    slashEquals,
+
+    /**
+     * 百分号等于（`%=`）。
+     */
+    percentEquals,
+
+    /**
+     * 与等于（`&=`）。
+     */
+    ampersandEquals,
+
+    /**
+     * 或等于（`|=`）。
+     */
+    barEquals,
+
+    /**
+     * 问号（`?`）。
+     */
+    question,
+
+    /**
+     * 逗号（`,`）。
+     * @precedence 8
+     */
+    comma,
+
+    // #endregion
+
+    // #region 其它运算符（Other Operators）
+
+    /**
+     * 闭括号（`)`）。
+     * @precedence 84
+     */
+    closeParen,
+
+    /**
+     * 闭方括号（`]`）。
+     * @precedence 84
+     */
+    closeBracket,
+
+    /**
+     * 闭花括号（`}`）。
+     * @precedence 84
+     */
+    closeBrace,
+
+    /**
+     * 冒号（`:`）。
+     * @precedence 82
+     */
+    colon,
+
+    /**
+     * 分号（`;`）。
+     * @precedence 100
+     */
+    semicolon,
+
+    // #endregion
+
+    // #region 语句（Statements）
+
+    /**
+     * 关键字 if。
+     */
+    if,
+
+    /**
+     * 关键字 else。
+     */
+    else,
+
+    /**
+     * 关键字 switch。
+     */
+    switch,
+
+    /**
+     * 关键字 case。
+     */
+    case,
+
+    /**
+     * 关键字 for。
+     */
+    for,
+
+    /**
+     * 关键字 to。
+     */
+    to,
+
+    /**
+     * 关键字 while。
+     */
+    while,
+
+    /**
+     * 关键字 until。
+     */
+    until,
+    
+    /**
+     * 关键字 loop。
+     */
+    loop,
+    
+    /**
+     * 关键字 do。
+     */
+    do,
+
+    /**
+     * 关键字 continue。
+     */
+    continue,
+
+    /**
+     * 关键字 break。
+     */
+    break,
+
+    /**
+     * 关键字 return。
+     */
+    return,
+
+    /**
+     * 关键字 throw。
+     */
+    throw,
+
+    /**
+     * 关键字 try。
+     */
+    try,
+
+    /**
+     * 关键字 catch。
+     */
+    catch,
+
+    /**
+     * 关键字 finally。
+     */
+    finally,
+
+}
+
+//,
+//*= /= %= += ‐= <<= >>= >>>= &= ^= |= **=
+//    ? :   yield()=>{ }
+//||
+//&&
+//|
+//^
+//&
+//== != === !==
+//    < > <= >= instanceof in
+//<< >> >>>
+//    + -
+//* / %
+//    **
+
+
+//    delete void typeof + - ~ !
+
+/**
+ * 判断指定的标记是否可作为单目运算符。
+ * @param token 要判断的标记。
+ * @returns 如果是则返回 true，否则返回 false。
+ */
+function isUnaryOperator(token: TokenType) {
+    return token >= TokenType.openParen;
+}
+
+/**
+ * 判断指定的标记是否可作为双目运算符。
+ * @param token 要判断的标记。
+ * @returns 如果是则返回 true，否则返回 false。
+ */
+function isBinaryOperator(token: TokenType) {
+    return type >= TokenType.BINARAY_OPERATOR_START && type < TokenType.BINARAY_OPERATOR_END;
+}
+
+/**
+ * 判断指定的标记是否是赋值运算符。
+ * @param token 要判断的标记。
+ * @returns 如果是则返回 true，否则返回 false。
+ */
+function isAssignOperator(token: TokenType) {
+    return type >= TokenType.ASSIGN_OPERATOR_START && type < TokenType.ASSIGN_OPERATOR_END;
+}
+
+/**
+ * 判断指定的标记是否可作为表达式的开头。
+ * @param token 要判断的标记。
+ * @returns 如果是则返回 true，否则返回 false。
+ */
+function isExpressionStart(token: TokenType) {
+    return isUnaryOperator(token) || isPredefinedType(type);
+}
+
+/**
+ * 判断指定的标记是否可作为语句开头。
+ * @param token 要判断的标记。
+ * @returns 如果是则返回 true，否则返回 false。
+ */
+function isStatementStart(token: TokenType) {
+    return type >= TokenType.STATEMENT_START && type < TokenType.STATEMENT_END;
+}
+
+/**
+ * 存储所有标记的名字。
+ */
+const tokenNames = [];
+
+/**
+ * 将指定标记转为 JavaScript 源码等效的字符串。
+ * @param token 要转换的标记。
+ * @returns 返回等效的字符串。
+ */
+function tokenToString(token: TokenType) {
+    return tokenNames[token];
+}
+
+///**
+// * 判断指定的标记是否是非保留的关键字。
+// * @param token 要判断的标记。
+// * @returns 如果是则返回 true，否则返回 false。
+// */
+//function isNonReservedWord(token: TokenType) {
+//    return token > TokenType.with;
+//}
+
+/**
+ * 存储所有标记的优先级。
+ */
+const precedences = [];
+
+/**
+ * 获取操作符的优先级。
+ * @param token 要判断的标记。
+ * @returns 返回一个数字。数字越大说明优先级越高。
+ */
+function getPrecedence(token: TokenType) {
+    return precedences[token];
+}
+
+/**
+ * 存储所有关键字的名字。
+ */
+const keywords: { [keyword: string]: TokenType } = {};
+
+/**
+ * 将指定的字符串转为对应的标记。
+ * @param token 要转换的字符串。
+ * @returns 返回等效的标记。如果字符串无效，则返回 undefined。
+ */
+function stringToToken(token: string) {
+    //// Reserved words are between 2 and 11 characters long and start with a lowercase letter
+    //const len = tokenValue.length;
+    //if (len >= 2 && len <= 11) {
+    //    const ch = tokenValue.charCodeAt(0);
+    //    if (ch >= CharacterCodes.a && ch <= CharacterCodes.z && hasOwnProperty.call(textToToken, tokenValue)) {
+    //        return token = textToToken[tokenValue];
+    //    }
+    //}
+    return keywords[token];
+}
+
+/// <summary>
+/// 获取标识符是否是关键字。
+/// </summary>
+/// <param name="type"></param>
+/// <returns></returns>
+function isKeyword(token: TokenType) {
+    return Unicode.isLetter(type.getName()[0]);
+}
+
+/**
+ * 判断一个标记是否是标识符或关键字。
+ * @param token 要判断的标记。
+ * @returns 如果是则返回 true，否则返回 false。
+ */
+function isIdentifierOrKeyword(token: TokenType) {
+    return token >= SyntaxKind.Identifier;
 }
