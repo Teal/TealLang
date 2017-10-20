@@ -9,6 +9,7 @@
 1.0
 1e4
 0xFFFFFF
+0XFFFFFF
 0o000000
 0b000000
 ```
@@ -17,7 +18,7 @@
 ```
 'hello'
 "hello"
-\`hello$(1 + 1)\`
+\`hello${1 + 1}\`
 ```
 
 #### 布尔和空
@@ -35,8 +36,9 @@ null
     
 #### 函数
 ```
-x => 1
-x, y => { }
+(x) { 1 }
+b(x, y) { }
+c(...z) { }
 ```
 
 ### 操作符
@@ -68,28 +70,26 @@ x, y => { }
 
 #### 成员访问
 ```
-., ..(链式访问)
-```
-
-#### 对象创建
-```
-new, delete
-```
-
-#### 类型操作符
-```
-is, as
+., ..(链式访问), ::(限定符)
 ```
 
 #### 函数调用
 ```
 fn1(4)
 fn2(p: 4)
+fn3(a: 1, b: 2)
 ```
 
 ## 语句
 
 ### 声明语句
+
+#### 导入声明
+```
+import ''
+import x from ''
+import x as X from ''
+```
 
 #### 变量声明语句
 ```
@@ -98,35 +98,33 @@ a = 1
 
 #### 函数声明语句
 ```
-a = x: number, y?, z = 1, ...rest => {
+a(x: number, y?, z = 1, ...rest) {
 
 }
 ```
 
 #### 类声明语句
 ```
-a = type {
-    @extend User
+class A:User {
     length = 2
     length {
         return 2;
     }
-    length:set(value) {
+    length(value) {
          
     }
-    fn {
+    fn() {
 
     }
 }
-a = enum {
+enum A {
     aa, bb, cc
 }
-a[]
 ```
 
 #### 伪类声明语句
 ```
-a:before(e) { }
+a::before { }
 ```
 
 ### 流程语句
@@ -175,31 +173,27 @@ switch val {
         b = 4;
 }
 
+b = switch val {
+    case 1:
+        1;
+}
+
 switch { // 等效于多个 if else if 。
     case a > 1:
     
-    csae a < 0 && a > 5:
+    case a < 0 && a > 5:
     
 }
 ```
 
-### try 语句
-```
-try {}
-try {} catch {}
-try {} catch(e) {}  // 只接受指定类型的错误。
-
-try {} finally {}
-try {} catch {} finally {}
-try {} catch(e) {} finally {}
-
-throw "Error"
-```
-
 ### 标签语句和跳转语句
 ```
-label: 
+#label
     goto label; // 跳转到 label 。
+    
+break
+
+continue
     
 return 1; // 返回值。
 ```
@@ -228,8 +222,10 @@ return 1; // 返回值。
 /// 表示后面是文档注释，文档注释会提取为 API 文档
     
     /// 输出值
-    /// @param a 要输出的内容
+    /// a 要输出的内容
     /// @return 输出的个数
     int print(string s){
     
     }
+
+
