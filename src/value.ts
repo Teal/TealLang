@@ -3,11 +3,15 @@
  */
 
 /**
- * 表示一个类型。
+ * 表示一个值。
  */
-class Type {
+class Value {
 
-    getMembers(name: string): Member[] {
+    /**
+     * 获取指定名字的所有属性。
+     * @param name 属性名。
+     */
+    getProperties(name: string): Value[] {
 
     }
 
