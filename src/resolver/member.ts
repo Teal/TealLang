@@ -166,6 +166,16 @@ class Method extends Member {
      */
     @cache get branches() { return invokeMethod(this, []); }
 
+    _callResults;
+
+    /**
+     * 调用当前函数。
+     * @param arguments 调用的参数。
+     */
+    call(arguments: Value[]) {
+
+    }
+
 }
 
 /**
@@ -196,74 +206,73 @@ class TypeParameter {
  * 表示一个模块。
  */
 class Module {
-    
-        /**
-         * 所在程序。
-         */
-        parent: Program;
-    
-        /**
-         * 源文件名。
-         */
-        fileName: string;
-    
-        /**
-         * 所有成员。
-         */
-        members: Member[] = [];
-    
-        /**
-         * 获取指定名称的成员。
-         * @param name 成员名称。
-         */
-        getMember(name: string) {
-            return this.members.find(member => member.name === name);
-        }
-    
-        /**
-         * 获取指定名称的所有成员。
-         * @param name 成员名称。
-         */
-        getMembers(name: string) {
-            return this.members.filter(member => member.name === name);
-        }
-    
-        /**
-         * 获取指定名称指代的成员。
-         * @param name 成员名称。
-         */
-        resolveMember(name: string) {
-            // 在当前模块范围内无法找到指定的模块。
-            const member = this.getMembers(name);
-            if (member.length) {
-                return member;
-            }
-            // 尝试扫描项目内所有源码。
-        }
-    
+
+    /**
+     * 所在程序。
+     */
+    parent: Program;
+
+    /**
+     * 源文件名。
+     */
+    fileName: string;
+
+    /**
+     * 所有成员。
+     */
+    members: Member[] = [];
+
+    /**
+     * 获取指定名称的成员。
+     * @param name 成员名称。
+     */
+    getMember(name: string) {
+        return this.members.find(member => member.name === name);
     }
-    
+
+    /**
+     * 获取指定名称的所有成员。
+     * @param name 成员名称。
+     */
+    getMembers(name: string) {
+        return this.members.filter(member => member.name === name);
+    }
+
+    /**
+     * 获取指定名称指代的成员。
+     * @param name 成员名称。
+     */
+    resolveMember(name: string) {
+        // 在当前模块范围内无法找到指定的模块。
+        const member = this.getMembers(name);
+        if (member.length) {
+            return member;
+        }
+        // 尝试扫描项目内所有源码。
+    }
+
+}
+
 /**
  * 表示一个程序。
  */
 class Program {
-    
-        /**
-         * 当前使用的编译器。
-         */
-        compiler: Compiler;
-    
-        /**
-         * 所有模块。
-         */
-        modules: Module[] = [];
-    
-        /**
-         * 对整个程序执行语义分析。
-         */
-        resolve() {
-    
-        }
-    
+
+    /**
+     * 当前使用的编译器。
+     */
+    compiler: Compiler;
+
+    /**
+     * 所有模块。
+     */
+    modules: Module[] = [];
+
+    /**
+     * 对整个程序执行语义分析。
+     */
+    resolve() {
+
     }
-    
+
+}

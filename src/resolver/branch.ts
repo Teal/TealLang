@@ -26,7 +26,7 @@ class Branch {
     /**
      * 存储每个指令的执行次数。
      */
-    execution: { [key: number]: number } = {};
+    execution: { [key: number]: boolean } = {};
 
     /**
      * 当前分支的执行栈。
